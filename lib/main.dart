@@ -12,7 +12,6 @@ import 'data/user_info.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.deleteBoxFromDisk("chatBox");
   Hive.registerAdapter(MessageAdapter());
   await Hive.openBox("chatBox");
   runApp(MyApp());
@@ -44,7 +43,7 @@ class _MyAppState extends State<MyApp> {
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     userName = prefs.getString(Constants.username);
-    for (String tag in userTags.keys.toList()) {
+    for (String tag in userTags.keys) {
       userTags[tag] = prefs.getBool(tag) ?? false;
     }
     setState(() {

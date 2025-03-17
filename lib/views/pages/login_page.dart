@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   void resetUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.username);
-    for(String tag in userTags.keys.toList()){
+    for(String tag in userTags.keys){
       userTags[tag] = false;
     }
   }
@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
     await prefs.setString(Constants.username, _nameController.text);
     userName = _nameController.text;
     _nameController.dispose();
-    for(String tag in userTags.keys.toList()) {
+    for(String tag in userTags.keys) {
       await prefs.setBool(tag, userTags[tag]!);
     }
     super.dispose();
@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                 spacing: 10.0,
                 alignment: WrapAlignment.center,
                 children: List.generate(userTags.length,(index) {
-                  return TagButtonWidget(text: userTags.keys.toList().elementAt(index), tagMap: userTags,);
+                  return TagButtonWidget(text: userTags.keys.elementAt(index), tagMap: userTags,);
                 },)
                 ,
               ),

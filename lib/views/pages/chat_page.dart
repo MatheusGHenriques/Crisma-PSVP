@@ -5,6 +5,7 @@ import 'package:crisma/views/widgets/tag_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import '../../data/user_info.dart';
+import '../../networking/udp_networking.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -21,14 +22,32 @@ class _ChatPageState extends State<ChatPage> {
   late List<String> tags;
   final chatBox = Hive.box("chatBox");
 
+  late UdpNetworking _udpNetworking;
+
   @override
   void initState() {
-    initController();
-    initTags();
+    _initController();
+    _initTags();
+    _initNetworking();
     super.initState();
   }
 
-  void initController() {
+  void _initNetworking() {
+    _udpNetworking = UdpNetworking(
+      deviceName: userName!,
+      onMessageReceived: (Message message) {
+        bool isDuplicate = chatBox.values.cast<Message>().any(
+          (msg) => msg.sender == message.sender && msg.text == message.text && msg.time == message.time,
+        );
+        if (!isDuplicate) {
+          chatBox.add(message);
+        }
+      },
+    );
+    _udpNetworking.start();
+  }
+
+  void _initController() {
     _sendMessageController.addListener(() {
       setState(() {
         _hasMessage = _sendMessageController.text.isNotEmpty;
@@ -36,31 +55,43 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void initTags(){
+  void _initTags() {
     selectedTags = {
-    "Coordenação": false,
-    "Música": false,
-    "Suporte": false,
-    "Animação": false,
-    "Cozinha": false,
-    "Mídias": false,
-    "Homens": false,
-    "Mulheres": false,
+      "Coordenação": false,
+      "Música": false,
+      "Suporte": false,
+      "Animação": false,
+      "Cozinha": false,
+      "Mídias": false,
+      "Homens": false,
+      "Mulheres": false,
     };
     chatHasSelectedTagNotifier.value = false;
   }
 
   void sendMessage() {
-    // Ainda falta enviar a mensagem
     final newTags = Map<String, bool>.from(selectedTags);
-    Message sendMessage = Message(tags: newTags, sender: userName!, text: _sendMessageController.text);
-    chatBox.add(sendMessage);
+    Message messageToSend = Message(tags: newTags, sender: userName!, text: _sendMessageController.text);
+    _udpNetworking.sendMessage(messageToSend);
     _sendMessageController.clear();
+    _initTags();
+  }
+
+  bool userHasMessageTags(Message message) {
+    if (message.sender == userName) {
+      return true;
+    }
+    for (String tag in message.tags.keys) {
+      if (message.tags[tag]! && userTags[tag]!) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @override
   void dispose() {
-    isChatBoxInitializedNotifier.value = false;
+    _sendMessageController.dispose();
     super.dispose();
   }
 
@@ -82,12 +113,17 @@ class _ChatPageState extends State<ChatPage> {
                     child: ValueListenableBuilder(
                       valueListenable: chatBox.listenable(),
                       builder: (context, box, child) {
+                        List<Message> messages = box.values.cast<Message>().toList();
+                        messages.sort((a, b) => a.time.compareTo(b.time));
                         return Column(
-                          spacing: 10,
-                          children: List.generate(box.length, (index) {
-                            Message message = box.getAt(index);
-                            return MessageWidget(message: message);
-                          }),
+                          spacing: 5,
+                          children:
+                              messages.map((message) {
+                                if (userHasMessageTags(message)) {
+                                  return MessageWidget(message: message);
+                                }
+                                return SizedBox();
+                              }).toList(),
                         );
                       },
                     ),
@@ -106,28 +142,25 @@ class _ChatPageState extends State<ChatPage> {
                               builder: (context) {
                                 return Dialog(
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                                  alignment: Alignment.bottomCenter,
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        spacing: 10,
-                                        children: List.generate(selectedTags.length, (index) {
-                                          return TagButtonWidget(
-                                            text: selectedTags.keys.toList().elementAt(index),
-                                            tagMap: selectedTags,
-                                          );
-                                        }),
-                                      ),
+                                    child: Wrap(
+                                      spacing: 5,
+                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      alignment: WrapAlignment.center,
+                                      children: List.generate(selectedTags.length, (index) {
+                                        return TagButtonWidget(
+                                          text: selectedTags.keys.elementAt(index),
+                                          tagMap: selectedTags,
+                                        );
+                                      }),
                                     ),
                                   ),
                                 );
                               },
                             ).then((value) {
                               chatHasSelectedTagNotifier.value = false;
-                              for (String tag in selectedTags.keys.toList()) {
+                              for (String tag in selectedTags.keys) {
                                 if (selectedTags[tag] == true) {
                                   chatHasSelectedTagNotifier.value = true;
                                 }
@@ -136,7 +169,7 @@ class _ChatPageState extends State<ChatPage> {
                           },
                           icon: const Icon(Icons.tag_rounded),
                           style: ButtonStyle(
-                            backgroundColor: hasSelectedTag ? WidgetStatePropertyAll(Colors.redAccent) : null,
+                            backgroundColor: hasSelectedTag ? const WidgetStatePropertyAll(Colors.redAccent) : null,
                           ),
                         );
                       },
@@ -164,7 +197,10 @@ class _ChatPageState extends State<ChatPage> {
                               : null,
                       icon: const Icon(Icons.send_rounded),
                       style: ButtonStyle(
-                        backgroundColor: _hasMessage && chatHasSelectedTagNotifier.value ? WidgetStatePropertyAll(Colors.redAccent) : null,
+                        backgroundColor:
+                            _hasMessage && chatHasSelectedTagNotifier.value
+                                ? const WidgetStatePropertyAll(Colors.redAccent)
+                                : null,
                       ),
                     ),
                   ],

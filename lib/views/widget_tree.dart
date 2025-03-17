@@ -25,7 +25,7 @@ class WidgetTree extends StatelessWidget {
           ThemeModeButton(),
           IconButton(onPressed: () {
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
-              for(String tag in userTags.keys.toList()) {
+              for(String tag in userTags.keys) {
                 userTags[tag] = false;
               }
               userName = null;

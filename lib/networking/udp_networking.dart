@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:hive_ce/hive.dart';
 
 import '../data/message.dart';
 
@@ -8,7 +9,7 @@ class UdpNetworking {
   RawDatagramSocket? _socket;
   final String deviceName;
   final Function(Message) onMessageReceived;
-  final List<Message> _messageHistory = []; // Stores past messages
+  final Box chatBox = Hive.box("chatBox");
 
   UdpNetworking({required this.deviceName, required this.onMessageReceived});
 
@@ -29,15 +30,16 @@ class UdpNetworking {
 
     if (jsonData['type'] == 'message') {
       Message message = Message.fromJson(jsonData['payload']);
-      _messageHistory.add(message); // Save the message
+      _addMessageToChatBox(message);
       onMessageReceived(message);
     } else if (jsonData['type'] == 'discovery_request') {
-      _sendAllMessages(datagram.address); // Send all stored messages
+      _sendAllMessages(datagram.address);
     }
   }
 
   void sendMessage(Message message) {
-    _messageHistory.add(message); // Save the message locally
+    _addMessageToChatBox(message);
+
     String jsonString = json.encode({'type': 'message', 'payload': message.toJson()});
     _socket?.send(utf8.encode(jsonString), InternetAddress('255.255.255.255'), port);
   }
@@ -48,9 +50,19 @@ class UdpNetworking {
   }
 
   void _sendAllMessages(InternetAddress recipient) {
-    for (Message message in _messageHistory) {
+    for (Message message in chatBox.values.cast<Message>()) {
       String jsonString = json.encode({'type': 'message', 'payload': message.toJson()});
       _socket?.send(utf8.encode(jsonString), recipient, port);
+    }
+  }
+
+  void _addMessageToChatBox(Message message) {
+    bool isDuplicate = chatBox.values.cast<Message>().any(
+      (msg) => msg.sender == message.sender && msg.text == message.text && msg.time == message.time,
+    );
+
+    if (!isDuplicate) {
+      chatBox.add(message);
     }
   }
 }
