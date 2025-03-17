@@ -1,14 +1,20 @@
 import 'package:crisma/data/constants.dart';
+import 'package:crisma/hive/hive_adapters.dart';
 import 'package:crisma/views/pages/login_page.dart';
 import 'package:crisma/views/widget_tree.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_ce_flutter/adapters.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/notifiers.dart';
 import 'data/user_info.dart';
 
 
-void main(){
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(MessageAdapter());
+  await Hive.openBox("chatBox");
   runApp(MyApp());
 }
 

@@ -1,8 +1,10 @@
-
+import 'package:crisma/data/message.dart';
 import 'package:crisma/data/notifiers.dart';
-
+import 'package:crisma/views/widgets/message_widget.dart';
 import 'package:crisma/views/widgets/tag_button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_ce_flutter/adapters.dart';
+import '../../data/user_info.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -25,24 +27,35 @@ class _ChatPageState extends State<ChatPage> {
     "Mulheres": false,
   };
   bool _hasMessage = false;
+
   late List<String> tags;
+  final chatBox = Hive.box("chatBox");
 
   @override
   void initState() {
+    initController();
+    super.initState();
+  }
+
+  void initController() {
     _sendMessageController.addListener(() {
       setState(() {
         _hasMessage = _sendMessageController.text.isNotEmpty;
       });
     });
-    super.initState();
   }
 
-
-  void sendMessage(){
+  void sendMessage() {
     // Ainda falta enviar a mensagem
-    // Message sendMessage = Message(sender: userName!, text: _sendMessageController.text,);
-
+    Message sendMessage = Message(sender: userName!, text: _sendMessageController.text);
+    chatBox.add(sendMessage);
     _sendMessageController.clear();
+  }
+
+  @override
+  void dispose() {
+    isChatBoxInitializedNotifier.value = false;
+    super.dispose();
   }
 
   @override
@@ -54,20 +67,24 @@ class _ChatPageState extends State<ChatPage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
+              spacing: 10,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Expanded(
                   child: SingleChildScrollView(
                     reverse: true,
-                    child: Column(
-                      children: [
-
-                        ],
+                    child: ValueListenableBuilder(
+                      valueListenable: chatBox.listenable(),
+                      builder: (context, box, child) {
+                        return Column(
+                          children: List.generate(box.length, (index) {
+                            Message message = box.getAt(index);
+                            return MessageWidget(message: message);
+                          }),
+                        );
+                      },
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 10,
                 ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
