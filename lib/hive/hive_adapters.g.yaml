@@ -5,9 +5,13 @@ nextTypeId: 1
 types:
   Message:
     typeId: 0
-    nextIndex: 2
+    nextIndex: 4
     fields:
-      sender:
+      tags:
         index: 0
-      text:
+      sender:
         index: 1
+      text:
+        index: 2
+      time:
+        index: 3

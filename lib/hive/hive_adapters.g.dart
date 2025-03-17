@@ -16,17 +16,26 @@ class MessageAdapter extends TypeAdapter<Message> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Message(sender: fields[0] as String, text: fields[1] as String);
+    return Message(
+      tags: (fields[0] as Map).cast<String, bool>(),
+      sender: fields[1] as String,
+      text: fields[2] as String,
+      time: fields[3] as DateTime?,
+    );
   }
 
   @override
   void write(BinaryWriter writer, Message obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(0)
-      ..write(obj.sender)
+      ..write(obj.tags)
       ..writeByte(1)
-      ..write(obj.text);
+      ..write(obj.sender)
+      ..writeByte(2)
+      ..write(obj.text)
+      ..writeByte(3)
+      ..write(obj.time);
   }
 
   @override

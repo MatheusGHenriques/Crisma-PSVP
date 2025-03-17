@@ -47,7 +47,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void sendMessage() {
     // Ainda falta enviar a mensagem
-    Message sendMessage = Message(sender: userName!, text: _sendMessageController.text);
+    Message sendMessage = Message(tags: selectedTags, sender: userName!, text: _sendMessageController.text);
     chatBox.add(sendMessage);
     _sendMessageController.clear();
   }
@@ -149,54 +149,9 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                     IconButton.filledTonal(
                       onPressed:
-                          _hasMessage
+                          _hasMessage && chatHasSelectedTagNotifier.value
                               ? () {
-                                chatHasSelectedTagNotifier.value
-                                    ? sendMessage()
-                                    : showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return Dialog(
-                                          child: SizedBox(
-                                            height: 200,
-                                            width: 200,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(20),
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  const Text(
-                                                    "Você não selecionou uma tag. Gostaria de enviar a mensagem para todos?",
-                                                    style: TextStyle(fontSize: 16),
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                  const SizedBox(height: 20),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      FilledButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(context);
-                                                        },
-                                                        child: const Text("Não"),
-                                                      ),
-                                                      const SizedBox(width: 20),
-                                                      FilledButton(
-                                                        onPressed: () {
-                                                          sendMessage();
-                                                          Navigator.pop(context);
-                                                        },
-                                                        child: const Text("Sim"),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
+                                sendMessage();
                               }
                               : null,
                       icon: const Icon(Icons.send_rounded),
