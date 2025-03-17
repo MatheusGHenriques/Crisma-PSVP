@@ -22,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState(){
     super.initState();
-    resetUsername();
+    resetUser();
     _nameController.addListener(() {
       setState((){
         _hasName = _nameController.text.isNotEmpty;
@@ -30,9 +30,12 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void resetUsername() async{
+  void resetUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.username);
+    for(String tag in userTags.keys.toList()){
+      userTags[tag] = false;
+    }
   }
 
   @override
@@ -60,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
             spacing: 20.0,
             children: [
               ValueListenableBuilder(
-                valueListenable: darkModeNotifier,
+                valueListenable: isDarkModeNotifier,
                 builder: (context, darkMode, child) {
                   return Image.asset(
                     darkMode

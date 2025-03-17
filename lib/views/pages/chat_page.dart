@@ -15,17 +15,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _sendMessageController = TextEditingController();
-  Map<String, bool> selectedTags = {
-    "Todos": false,
-    "Coordenação": false,
-    "Música": false,
-    "Suporte": false,
-    "Animação": false,
-    "Cozinha": false,
-    "Mídias": false,
-    "Homens": false,
-    "Mulheres": false,
-  };
+  late Map<String, bool> selectedTags;
   bool _hasMessage = false;
 
   late List<String> tags;
@@ -34,6 +24,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     initController();
+    initTags();
     super.initState();
   }
 
@@ -45,9 +36,24 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  void initTags(){
+    selectedTags = {
+    "Coordenação": false,
+    "Música": false,
+    "Suporte": false,
+    "Animação": false,
+    "Cozinha": false,
+    "Mídias": false,
+    "Homens": false,
+    "Mulheres": false,
+    };
+    chatHasSelectedTagNotifier.value = false;
+  }
+
   void sendMessage() {
     // Ainda falta enviar a mensagem
-    Message sendMessage = Message(tags: selectedTags, sender: userName!, text: _sendMessageController.text);
+    final newTags = Map<String, bool>.from(selectedTags);
+    Message sendMessage = Message(tags: newTags, sender: userName!, text: _sendMessageController.text);
     chatBox.add(sendMessage);
     _sendMessageController.clear();
   }
@@ -77,6 +83,7 @@ class _ChatPageState extends State<ChatPage> {
                       valueListenable: chatBox.listenable(),
                       builder: (context, box, child) {
                         return Column(
+                          spacing: 10,
                           children: List.generate(box.length, (index) {
                             Message message = box.getAt(index);
                             return MessageWidget(message: message);
@@ -106,6 +113,7 @@ class _ChatPageState extends State<ChatPage> {
                                       scrollDirection: Axis.horizontal,
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
+                                        spacing: 10,
                                         children: List.generate(selectedTags.length, (index) {
                                           return TagButtonWidget(
                                             text: selectedTags.keys.toList().elementAt(index),
@@ -156,7 +164,7 @@ class _ChatPageState extends State<ChatPage> {
                               : null,
                       icon: const Icon(Icons.send_rounded),
                       style: ButtonStyle(
-                        backgroundColor: _hasMessage ? WidgetStatePropertyAll(Colors.redAccent) : null,
+                        backgroundColor: _hasMessage && chatHasSelectedTagNotifier.value ? WidgetStatePropertyAll(Colors.redAccent) : null,
                       ),
                     ),
                   ],
