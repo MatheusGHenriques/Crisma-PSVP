@@ -1,19 +1,41 @@
 import 'package:crisma/views/pages/chat_page.dart';
-import 'package:crisma/views/pages/schedule_page.dart';
 import 'package:crisma/views/pages/home_page.dart';
 import 'package:crisma/views/pages/login_page.dart';
+import 'package:crisma/views/pages/schedule_page.dart';
 import 'package:crisma/views/pages/to_do_page.dart';
 import 'package:crisma/views/widgets/navigation_bar_widget.dart';
 import 'package:crisma/views/widgets/theme_mode_button.dart';
-import 'package:flutter/material.dart';
 
+import '../data/message.dart';
 import '../data/notifiers.dart';
 import '../data/user_info.dart';
+import '../networking/tcp_networking.dart';
+import 'package:flutter/material.dart';
 
-List<Widget> pages = [HomePage(), ChatPage(), ToDoPage(), SchedulePage()];
-
-class WidgetTree extends StatelessWidget {
+class WidgetTree extends StatefulWidget {
   const WidgetTree({super.key});
+
+  @override
+  State<WidgetTree> createState() => _WidgetTreeState();
+}
+
+class _WidgetTreeState extends State<WidgetTree> {
+  late PeerToPeerTcpNetworking _tcpNetworking;
+
+  @override
+  void initState() {
+    _initNetworking();
+    super.initState();
+  }
+
+  void _initNetworking() async{
+    _tcpNetworking = PeerToPeerTcpNetworking();
+    await _tcpNetworking.start();
+  }
+
+  void tcpSendMessage(Message messageToSend){
+    _tcpNetworking.sendMessage(messageToSend);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +43,9 @@ class WidgetTree extends StatelessWidget {
       appBar: AppBar(
         title: Text("Crisma PSVP"),
         centerTitle: true,
+        leading: ValueListenableBuilder(valueListenable: hasConnectedPeerNotifier, builder: (context, hasConnectedPeer, child) {
+          return hasConnectedPeer ? Icon(Icons.signal_wifi_4_bar_rounded) : IconButton(onPressed: _tcpNetworking.sendUdpDiscoveryRequest, icon: Icon(Icons.signal_wifi_off_rounded));
+        },),
         actions: [
           ThemeModeButton(),
           IconButton(onPressed: () {
@@ -37,7 +62,12 @@ class WidgetTree extends StatelessWidget {
       body: ValueListenableBuilder(valueListenable: selectedPageNotifier, builder: (context, selectedPage, child) {
         return IndexedStack(
           index: selectedPage,
-          children: pages,
+          children: [
+            HomePage(),
+            ChatPage(onSendMessage: tcpSendMessage), // Pass the function here
+            ToDoPage(),
+            SchedulePage(),
+          ],
         );
       },),
       bottomNavigationBar: NavigationBarWidget(),

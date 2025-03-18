@@ -5,37 +5,31 @@ import 'package:crisma/views/widgets/tag_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import '../../data/user_info.dart';
-import '../../networking/udp_networking.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  final Function(Message) onSendMessage;
+
+  const ChatPage({super.key, required this.onSendMessage});
+
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage>{
+class _ChatPageState extends State<ChatPage> {
   final TextEditingController _sendMessageController = TextEditingController();
   late Map<String, bool> selectedTags;
   bool _hasMessage = false;
 
-  late List<String> tags;
   final chatBox = Hive.box("chatBox");
 
-  late UdpNetworking _udpNetworking;
+
 
   @override
   void initState() {
     super.initState();
     _initController();
     _initTags();
-    _initNetworking();
-  }
-
-  void _initNetworking() async{
-      await Future.delayed(Duration(milliseconds: 500));
-    _udpNetworking = UdpNetworking();
-    _udpNetworking.start();
   }
 
   void _initController() {
@@ -60,10 +54,14 @@ class _ChatPageState extends State<ChatPage>{
     chatHasSelectedTagNotifier.value = false;
   }
 
-  void sendButtonClicked(){
+  void sendButtonClicked() {
     final newTags = Map<String, bool>.from(selectedTags);
-    Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text);
-    _udpNetworking.sendMessage(messageToSend);
+    Message messageToSend = Message(
+      tags: newTags,
+      sender: userName,
+      text: _sendMessageController.text,
+    );
+    widget.onSendMessage(messageToSend);
     _sendMessageController.clear();
     _initTags();
   }
@@ -78,6 +76,15 @@ class _ChatPageState extends State<ChatPage>{
       }
     }
     return false;
+  }
+
+  String _generateMessageHash(Message message) {
+    var sortedTags = message.tags.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    String tagsString = sortedTags
+        .map((e) => '${e.key}:${e.value.toString()}')
+        .join(',');
+    return '${message.text}-${message.sender}-$tagsString-${message.time.toIso8601String()}';
   }
 
   @override
@@ -104,18 +111,28 @@ class _ChatPageState extends State<ChatPage>{
                     child: ValueListenableBuilder(
                       valueListenable: chatBox.listenable(),
                       builder: (context, box, child) {
-                        List<Message> messages = box.values.cast<Message>().toList();
+                        List<Message> messages =
+                        box.values.cast<Message>().toList();
                         messages.sort((a, b) => a.time.compareTo(b.time));
                         return Column(
                           spacing: 5,
-                          children:
-                              messages.map((message) {
-                                if (userHasMessageTags(message)) {
-                                  return MessageWidget(message: message);
-                                }
-                                return SizedBox();
-                              }).toList(),
+                          children: messages.fold<List<Widget>>([], (widgets, message) {
+                            // Initialize a Set to track seen message hashes
+                            Set<String> seenMessages = <String>{};
+
+                            // Generate a unique hash for the message to detect duplicates
+                            String messageHash = _generateMessageHash(message);
+
+                            // Check if the message has already been processed (i.e., if it's a duplicate)
+                            if (!seenMessages.contains(messageHash) && userHasMessageTags(message)) {
+                              seenMessages.add(messageHash); // Mark the message as seen
+                              widgets.add(MessageWidget(message: message)); // Add the message to the list
+                            }
+
+                            return widgets;
+                          }),
                         );
+
                       },
                     ),
                   ),
@@ -133,19 +150,25 @@ class _ChatPageState extends State<ChatPage>{
                               context: context,
                               builder: (context) {
                                 return Dialog(
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(25)),
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Wrap(
                                       spacing: 5,
-                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      crossAxisAlignment:
+                                      WrapCrossAlignment.center,
                                       alignment: WrapAlignment.center,
-                                      children: List.generate(selectedTags.length, (index) {
-                                        return TagButtonWidget(
-                                          text: selectedTags.keys.elementAt(index),
-                                          tagMap: selectedTags,
-                                        );
-                                      }),
+                                      children: List.generate(
+                                        selectedTags.length,
+                                            (index) {
+                                          return TagButtonWidget(
+                                            text: selectedTags.keys
+                                                .elementAt(index),
+                                            tagMap: selectedTags,
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ),
                                 );
@@ -161,7 +184,9 @@ class _ChatPageState extends State<ChatPage>{
                           },
                           icon: const Icon(Icons.tag_rounded),
                           style: ButtonStyle(
-                            backgroundColor: hasSelectedTag ? const WidgetStatePropertyAll(Colors.redAccent) : null,
+                            backgroundColor: hasSelectedTag
+                                ? const WidgetStatePropertyAll(Colors.redAccent)
+                                : null,
                           ),
                         );
                       },
@@ -173,27 +198,27 @@ class _ChatPageState extends State<ChatPage>{
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           hintText: "Digite uma mensagem",
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25)),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
                         ),
                         enableInteractiveSelection: false,
                         enableSuggestions: false,
                       ),
                     ),
                     IconButton.filledTonal(
-                      onPressed:
-                          _hasMessage && chatHasSelectedTagNotifier.value
-                              ? () {
-                                sendButtonClicked();
-                              }
-                              : null,
+                      onPressed: _hasMessage && chatHasSelectedTagNotifier.value
+                          ? () {
+                        sendButtonClicked();
+                      }
+                          : null,
                       icon: const Icon(Icons.send_rounded),
                       style: ButtonStyle(
-                        backgroundColor:
-                            _hasMessage && chatHasSelectedTagNotifier.value
-                                ? const WidgetStatePropertyAll(Colors.redAccent)
-                                : null,
+                        backgroundColor: _hasMessage &&
+                            chatHasSelectedTagNotifier.value
+                            ? const WidgetStatePropertyAll(Colors.redAccent)
+                            : null,
                       ),
                     ),
                   ],

@@ -14,6 +14,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(MessageAdapter());
   await Hive.openBox("chatBox");
+  await Hive.openBox("hashMessageBox");
   runApp(MyApp());
 }
 
