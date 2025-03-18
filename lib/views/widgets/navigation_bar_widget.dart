@@ -15,6 +15,8 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
       valueListenable: selectedPageNotifier,
       builder: (context, selectedPage, child) {
         return NavigationBar(
+          height: 70,
+          labelPadding: EdgeInsets.zero,
           destinations: [
             NavigationDestination(icon: Icon(Icons.home_rounded), label: ""),
             NavigationDestination(icon: Icon(Icons.chat_rounded), label: ""),

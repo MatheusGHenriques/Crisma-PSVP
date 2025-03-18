@@ -1,4 +1,4 @@
-String? userName;
+late String userName;
 
 Map<String, bool> userTags = {
   "Coordenação": false,

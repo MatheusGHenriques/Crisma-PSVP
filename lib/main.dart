@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    userName = prefs.getString(Constants.username);
+    userName = prefs.getString(Constants.username) ?? "";
     for (String tag in userTags.keys) {
       userTags[tag] = prefs.getBool(tag) ?? false;
     }
@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 300),
       transitionBuilder: (child, animation) {
         return FadeTransition(opacity: animation, child: child);
       },
@@ -71,13 +71,12 @@ class _MyAppState extends State<MyApp> {
                         brightness: darkMode ? Brightness.dark : Brightness.light,
                       ),
                     ),
-                    home: userName == null ? LoginPage() : WidgetTree(),
+                    home: userName == "" ? LoginPage() : WidgetTree(),
                   );
                 },
               )
-              : Container(
+              : ColoredBox(
                 color: Colors.redAccent,
-                child: Center(child: Image.asset('assets/images/compact_dark_logo.png', width: 100, height: 150)),
               ),
     );
   }

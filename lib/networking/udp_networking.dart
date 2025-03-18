@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:crisma/data/user_info.dart';
 import 'package:hive_ce/hive.dart';
 
 import '../data/message.dart';
@@ -7,18 +8,15 @@ import '../data/message.dart';
 class UdpNetworking {
   static const int port = 64128;
   RawDatagramSocket? _socket;
-  final String deviceName;
-  final Function(Message) onMessageReceived;
+  final String deviceName = userName;
   final Box chatBox = Hive.box("chatBox");
-
-  UdpNetworking({required this.deviceName, required this.onMessageReceived});
 
   Future<void> start() async {
     _socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, port);
     _socket?.broadcastEnabled = true;
     _socket?.listen(_handleIncomingMessage);
 
-    _sendDiscoveryRequest();
+    sendDiscoveryRequest();
   }
 
   void _handleIncomingMessage(RawSocketEvent event) {
@@ -30,8 +28,8 @@ class UdpNetworking {
 
     if (jsonData['type'] == 'message') {
       Message message = Message.fromJson(jsonData['payload']);
+      if(message.sender == userName) return;
       _addMessageToChatBox(message);
-      onMessageReceived(message);
     } else if (jsonData['type'] == 'discovery_request') {
       _sendAllMessages(datagram.address);
     }
@@ -44,7 +42,7 @@ class UdpNetworking {
     _socket?.send(utf8.encode(jsonString), InternetAddress('255.255.255.255'), port);
   }
 
-  void _sendDiscoveryRequest() {
+  void sendDiscoveryRequest() {
     String jsonString = json.encode({'type': 'discovery_request'});
     _socket?.send(utf8.encode(jsonString), InternetAddress('255.255.255.255'), port);
   }
@@ -56,13 +54,18 @@ class UdpNetworking {
     }
   }
 
-  void _addMessageToChatBox(Message message) {
-    bool isDuplicate = chatBox.values.cast<Message>().any(
-      (msg) => msg.sender == message.sender && msg.text == message.text && msg.time == message.time,
-    );
+  Set<String> messageHashes = {};
 
-    if (!isDuplicate) {
-      chatBox.add(message);
+  void _addMessageToChatBox(Message message) {
+    String messageHash = _generateMessageHash(message);
+    if (messageHashes.contains(messageHash)) {
+      return;
     }
+    messageHashes.add(messageHash);
+    chatBox.add(message);
+  }
+
+  String _generateMessageHash(Message message) {
+    return '${message.text}-${message.sender}-${message.tags.toString()}-${message.time.hashCode}';
   }
 }

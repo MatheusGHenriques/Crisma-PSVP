@@ -14,7 +14,7 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage>{
   final TextEditingController _sendMessageController = TextEditingController();
   late Map<String, bool> selectedTags;
   bool _hasMessage = false;
@@ -26,24 +26,15 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void initState() {
+    super.initState();
     _initController();
     _initTags();
     _initNetworking();
-    super.initState();
   }
 
-  void _initNetworking() {
-    _udpNetworking = UdpNetworking(
-      deviceName: userName!,
-      onMessageReceived: (Message message) {
-        bool isDuplicate = chatBox.values.cast<Message>().any(
-          (msg) => msg.sender == message.sender && msg.text == message.text && msg.time == message.time,
-        );
-        if (!isDuplicate) {
-          chatBox.add(message);
-        }
-      },
-    );
+  void _initNetworking() async{
+      await Future.delayed(Duration(milliseconds: 500));
+    _udpNetworking = UdpNetworking();
     _udpNetworking.start();
   }
 
@@ -69,9 +60,9 @@ class _ChatPageState extends State<ChatPage> {
     chatHasSelectedTagNotifier.value = false;
   }
 
-  void sendMessage() {
+  void sendButtonClicked(){
     final newTags = Map<String, bool>.from(selectedTags);
-    Message messageToSend = Message(tags: newTags, sender: userName!, text: _sendMessageController.text);
+    Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text);
     _udpNetworking.sendMessage(messageToSend);
     _sendMessageController.clear();
     _initTags();
@@ -104,7 +95,7 @@ class _ChatPageState extends State<ChatPage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
-              spacing: 10,
+              spacing: 5,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Expanded(
@@ -130,6 +121,7 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
                 Row(
+                  spacing: 2,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     ValueListenableBuilder(
@@ -182,7 +174,8 @@ class _ChatPageState extends State<ChatPage> {
                         decoration: InputDecoration(
                           hintText: "Digite uma mensagem",
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+
                         ),
                         enableInteractiveSelection: false,
                         enableSuggestions: false,
@@ -192,7 +185,7 @@ class _ChatPageState extends State<ChatPage> {
                       onPressed:
                           _hasMessage && chatHasSelectedTagNotifier.value
                               ? () {
-                                sendMessage();
+                                sendButtonClicked();
                               }
                               : null,
                       icon: const Icon(Icons.send_rounded),
@@ -205,7 +198,7 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
               ],
             ),
           ),

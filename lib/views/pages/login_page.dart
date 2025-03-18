@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/views/widget_tree.dart';
 import 'package:crisma/views/widgets/tag_button_widget.dart';
@@ -20,34 +22,38 @@ class _LoginPageState extends State<LoginPage> {
   bool _hasName = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     resetUser();
     _nameController.addListener(() {
-      setState((){
+      setState(() {
         _hasName = _nameController.text.isNotEmpty;
       });
     });
   }
 
-  void resetUser() async{
+  void resetUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.username);
-    for(String tag in userTags.keys){
+    for (String tag in userTags.keys) {
       userTags[tag] = false;
     }
   }
 
   @override
-  void dispose() async{
+  void dispose() async {
+    super.dispose();
+  }
+
+  void pressedContinueButton() async {
+    selectedPageNotifier.value = 0;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(Constants.username, _nameController.text);
     userName = _nameController.text;
     _nameController.dispose();
-    for(String tag in userTags.keys) {
+    for (String tag in userTags.keys) {
       await prefs.setBool(tag, userTags[tag]!);
     }
-    super.dispose();
   }
 
   @override
@@ -66,11 +72,9 @@ class _LoginPageState extends State<LoginPage> {
                 valueListenable: isDarkModeNotifier,
                 builder: (context, darkMode, child) {
                   return Image.asset(
-                    darkMode
-                        ? 'assets/images/compact_dark_logo.png'
-                        : 'assets/images/compact_light_logo.png',
-                    height: 300.0,
-                    width: 200.0,
+                    darkMode ? 'assets/images/compact_dark_logo.png' : 'assets/images/compact_light_logo.png',
+                    height: 200.0,
+                    width: 117.0,
                   );
                 },
               ),
@@ -80,26 +84,29 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(hintText: "Digite seu nome aqui"),
                 controller: _nameController,
               ),
-              Text("Selecione os grupos dos quais voce faz parte:"),
+              Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
               Wrap(
                 spacing: 10.0,
                 alignment: WrapAlignment.center,
-                children: List.generate(userTags.length,(index) {
-                  return TagButtonWidget(text: userTags.keys.elementAt(index), tagMap: userTags,);
-                },)
-                ,
+                children: List.generate(userTags.length, (index) {
+                  return TagButtonWidget(text: userTags.keys.elementAt(index), tagMap: userTags);
+                }),
               ),
               FilledButton(
-                onPressed: _hasName? () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return WidgetTree();
-                      },
-                    ),
-                  );
-                } : null,
+                onPressed:
+                    _hasName
+                        ? () {
+                          pressedContinueButton();
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return WidgetTree();
+                              },
+                            ),
+                          );
+                        }
+                        : null,
                 child: Text("Continuar"),
               ),
             ],

@@ -28,18 +28,18 @@ class WidgetTree extends StatelessWidget {
               for(String tag in userTags.keys) {
                 userTags[tag] = false;
               }
-              userName = null;
+              userName = "";
               return LoginPage();
             },));
           }, icon: Icon(Icons.logout_rounded)),
         ],
       ),
-      body: ValueListenableBuilder(
-            valueListenable: selectedPageNotifier,
-            builder: (context, selectedPage, child) {
-              return pages.elementAt(selectedPage);
-            },
-          ),
+      body: ValueListenableBuilder(valueListenable: selectedPageNotifier, builder: (context, selectedPage, child) {
+        return IndexedStack(
+          index: selectedPage,
+          children: pages,
+        );
+      },),
       bottomNavigationBar: NavigationBarWidget(),
     );
   }
