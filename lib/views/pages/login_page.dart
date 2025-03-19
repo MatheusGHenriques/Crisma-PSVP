@@ -40,16 +40,15 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  void dispose() async {
+  void dispose(){
     super.dispose();
   }
 
   void pressedContinueButton() async {
+    userName = _nameController.text;
     selectedPageNotifier.value = 0;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(Constants.username, _nameController.text);
-    userName = _nameController.text;
-    _nameController.dispose();
+    await prefs.setString(Constants.username, userName);
     for (String tag in userTags.keys) {
       await prefs.setBool(tag, userTags[tag]!);
     }
@@ -93,6 +92,7 @@ class _LoginPageState extends State<LoginPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) {
+                                userTags["Geral"] = true;
                                 return WidgetTree();
                               },
                             ),

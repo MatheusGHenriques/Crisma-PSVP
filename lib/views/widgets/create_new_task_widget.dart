@@ -1,6 +1,9 @@
 import 'package:crisma/data/notifiers.dart';
+import 'package:crisma/data/task.dart';
+import 'package:crisma/data/user_info.dart';
 import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_ce/hive.dart';
 
 class CreateNewTaskWidget extends StatefulWidget {
   const CreateNewTaskWidget({super.key});
@@ -11,10 +14,12 @@ class CreateNewTaskWidget extends StatefulWidget {
 
 class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
   late bool _hasDescription = false;
+  final Box taskBox = Hive.box("taskBox");
 
   final TextEditingController _taskDescriptionController = TextEditingController();
   int _numberOfPersons = 1;
   final Map<String, bool> _newTaskTags = {
+    "Geral": false,
     "Coordenação": false,
     "Música": false,
     "Suporte": false,
@@ -26,7 +31,8 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
   };
 
   void _createNewTask() {
-
+    //o certo eh mandar para o TCP e ele adicionar na box
+    taskBox.add(Task(sender: userName, numberOfPersons: _numberOfPersons, description: _taskDescriptionController.text, tags: _newTaskTags));
   }
 
   void initController(){

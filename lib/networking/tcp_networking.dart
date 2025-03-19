@@ -27,14 +27,14 @@ class PeerToPeerTcpNetworking {
 
   Future<void> start() async {
     _chatBoxMessages = chatBox.values.cast<Message>().toSet();
-    _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, port);
+    _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, port, shared: true);
     _serverSocket?.listen(_handleIncomingConnection);
     await _startUdpDiscovery();
     sendUdpDiscoveryRequest();
   }
   
   Future<void> _startUdpDiscovery() async {
-    _udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, port);
+    _udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, port, reuseAddress: true, reusePort: true);
     _udpSocket!.broadcastEnabled = true;
     _udpSocket!.listen(_handleUdpData);
   }

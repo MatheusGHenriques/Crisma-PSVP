@@ -10,16 +10,13 @@ class MessageWidget extends StatelessWidget {
   const MessageWidget({super.key, required this.message});
 
   String _getTags() {
-    bool allTagged = true;
     String tags = "";
     for (String tag in message.tags.keys) {
-      if (message.tags[tag]!) {
+      if(message.tags[tag]!) {
         tags += "@$tag ";
-      } else {
-        allTagged = false;
       }
     }
-    return allTagged ? "@Todos" : tags;
+    return tags;
   }
 
   @override

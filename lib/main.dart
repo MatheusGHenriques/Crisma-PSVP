@@ -13,8 +13,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(MessageAdapter());
+  Hive.registerAdapter(TaskAdapter());
   await Hive.openBox("chatBox");
-  await Hive.openBox("hashMessageBox");
+  await Hive.openBox("taskBox");
   runApp(MyApp());
 }
 

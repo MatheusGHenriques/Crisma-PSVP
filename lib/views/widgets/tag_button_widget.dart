@@ -17,6 +17,14 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
   Widget build(BuildContext context) {
     active = widget.tagMap[widget.text]?? false;
     return OutlinedButton(onPressed: (){
+      if(widget.tagMap["Geral"] == false || widget.text == "Geral"){
+        if(widget.text == "Geral"){
+          for(String tag in widget.tagMap.keys){
+            if(tag != "Geral" && widget.tagMap[tag]!){
+              return;
+            }
+          }
+        }
       setState(() {
         active = !active;
       });
@@ -27,6 +35,7 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
           hasSelectedTagNotifier.value = true;
           return;
         }
+      }
       }
     },
       style: OutlinedButton.styleFrom(

@@ -17,7 +17,18 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _sendMessageController = TextEditingController();
-  late Map<String, bool> selectedTags;
+  String _stringTags = "";
+  late Map<String, bool> selectedTags = {
+    "Geral": false,
+    "Coordenação": false,
+    "Música": false,
+    "Suporte": false,
+    "Animação": false,
+    "Cozinha": false,
+    "Mídias": false,
+    "Homens": false,
+    "Mulheres": false,
+  };
   bool _hasMessage = false;
 
   final chatBox = Hive.box("chatBox");
@@ -26,7 +37,6 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     hasSelectedTagNotifier.value = false;
     _initController();
-    _initTags();
     super.initState();
   }
 
@@ -38,26 +48,11 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void _initTags() {
-    selectedTags = {
-      "Coordenação": false,
-      "Música": false,
-      "Suporte": false,
-      "Animação": false,
-      "Cozinha": false,
-      "Mídias": false,
-      "Homens": false,
-      "Mulheres": false,
-    };
-    hasSelectedTagNotifier.value = false;
-  }
-
   void sendButtonClicked() {
     final newTags = Map<String, bool>.from(selectedTags);
     Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text);
     widget.onSendMessage(messageToSend);
     _sendMessageController.clear();
-    _initTags();
   }
 
   bool userHasMessageTags(Message message) {
@@ -138,33 +133,43 @@ class _ChatPageState extends State<ChatPage> {
                       },
                     ),
                     Expanded(
-                      child: TextField(
-                        controller: _sendMessageController,
-                        maxLines: null,
-                        keyboardType: TextInputType.multiline,
-                        decoration: InputDecoration(
-                          hintText: "Digite uma mensagem",
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-
-                        ),
-                        enableInteractiveSelection: false,
-                        enableSuggestions: false,
+                      child: ValueListenableBuilder(
+                        valueListenable: hasSelectedTagNotifier,
+                        builder: (context, hasSelectedTag, child) {
+                          _stringTags = "";
+                          for(String tag in selectedTags.keys){
+                            if(selectedTags[tag]!){
+                              _stringTags += "@$tag ";
+                            }
+                          }
+                          return TextField(
+                            controller: _sendMessageController,
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                            decoration: InputDecoration(
+                              hintText: hasSelectedTag? _stringTags : "Digite uma mensagem",
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            ),
+                            enableInteractiveSelection: false,
+                            enableSuggestions: false,
+                          );
+                        },
                       ),
                     ),
                     IconButton.filledTonal(
                       onPressed:
-                      _hasMessage && hasSelectedTagNotifier.value
-                          ? () {
-                        sendButtonClicked();
-                      }
-                          : null,
+                          _hasMessage && hasSelectedTagNotifier.value
+                              ? () {
+                                sendButtonClicked();
+                              }
+                              : null,
                       icon: const Icon(Icons.send_rounded),
                       style: ButtonStyle(
                         backgroundColor:
-                        _hasMessage && hasSelectedTagNotifier.value
-                            ? const WidgetStatePropertyAll(Colors.redAccent)
-                            : null,
+                            _hasMessage && hasSelectedTagNotifier.value
+                                ? const WidgetStatePropertyAll(Colors.redAccent)
+                                : null,
                       ),
                     ),
                   ],
