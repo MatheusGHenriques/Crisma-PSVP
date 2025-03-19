@@ -24,9 +24,10 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void initState() {
-    super.initState();
+    hasSelectedTagNotifier.value = false;
     _initController();
     _initTags();
+    super.initState();
   }
 
   void _initController() {
@@ -48,7 +49,7 @@ class _ChatPageState extends State<ChatPage> {
       "Homens": false,
       "Mulheres": false,
     };
-    chatHasSelectedTagNotifier.value = false;
+    hasSelectedTagNotifier.value = false;
   }
 
   void sendButtonClicked() {
@@ -111,6 +112,31 @@ class _ChatPageState extends State<ChatPage> {
                   spacing: 2,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    ValueListenableBuilder(
+                      valueListenable: hasSelectedTagNotifier,
+                      builder: (context, hasSelectedTag, child) {
+                        return IconButton.filledTonal(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: TagSelectionWidget(tags: selectedTags),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          icon: const Icon(Icons.tag_rounded),
+                          style: ButtonStyle(
+                            backgroundColor: hasSelectedTag ? const WidgetStatePropertyAll(Colors.redAccent) : null,
+                          ),
+                        );
+                      },
+                    ),
                     Expanded(
                       child: TextField(
                         controller: _sendMessageController,
@@ -119,53 +145,26 @@ class _ChatPageState extends State<ChatPage> {
                         decoration: InputDecoration(
                           hintText: "Digite uma mensagem",
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+
                         ),
+                        enableInteractiveSelection: false,
+                        enableSuggestions: false,
                       ),
                     ),
                     IconButton.filledTonal(
                       onPressed:
-                          _hasMessage && chatHasSelectedTagNotifier.value
-                              ? () {
-                                sendButtonClicked();
-                              }
-                              : _hasMessage
-                              ? () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return Dialog(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8),
-                                        child: TagSelectionWidget(tags: selectedTags),
-                                      ),
-                                    );
-                                  },
-                                ).then((value) {
-                                  for (String tag in selectedTags.keys) {
-                                    if (selectedTags[tag]!) {
-                                      chatHasSelectedTagNotifier.value = true;
-                                    }
-                                  }
-                                });
-                              }
-                              : null, //talvez mandar um audio
-                      icon: ValueListenableBuilder(
-                        valueListenable: chatHasSelectedTagNotifier,
-                        builder: (context, chatHasSelectedTag, child) {
-                          return _hasMessage && chatHasSelectedTag
-                              ? Icon(Icons.send_rounded)
-                              : _hasMessage
-                              ? Icon(Icons.tag_rounded)
-                              : Icon(Icons.chat_rounded);
-                        },
-                      ),
+                      _hasMessage && hasSelectedTagNotifier.value
+                          ? () {
+                        sendButtonClicked();
+                      }
+                          : null,
+                      icon: const Icon(Icons.send_rounded),
                       style: ButtonStyle(
                         backgroundColor:
-                            _hasMessage && chatHasSelectedTagNotifier.value
-                                ? const WidgetStatePropertyAll(Colors.redAccent)
-                                : null,
+                        _hasMessage && hasSelectedTagNotifier.value
+                            ? const WidgetStatePropertyAll(Colors.redAccent)
+                            : null,
                       ),
                     ),
                   ],

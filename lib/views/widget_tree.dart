@@ -2,7 +2,7 @@ import 'package:crisma/views/pages/chat_page.dart';
 import 'package:crisma/views/pages/home_page.dart';
 import 'package:crisma/views/pages/login_page.dart';
 import 'package:crisma/views/pages/schedule_page.dart';
-import 'package:crisma/views/pages/to_do_page.dart';
+import 'package:crisma/views/pages/tasks_page.dart';
 import 'package:crisma/views/widgets/navigation_bar_widget.dart';
 import 'package:crisma/views/widgets/theme_mode_button.dart';
 
@@ -59,17 +59,26 @@ class _WidgetTreeState extends State<WidgetTree> {
           }, icon: Icon(Icons.logout_rounded)),
         ],
       ),
-      body: ValueListenableBuilder(valueListenable: selectedPageNotifier, builder: (context, selectedPage, child) {
-        return IndexedStack(
-          index: selectedPage,
-          children: [
+      body: ValueListenableBuilder<int>(
+        valueListenable: selectedPageNotifier,
+        builder: (context, selectedPage, child) {
+          final pages = [
             HomePage(),
-            ChatPage(onSendMessage: tcpSendMessage), // Pass the function here
-            ToDoPage(),
+            ChatPage(onSendMessage: tcpSendMessage),
+            TasksPage(),
             SchedulePage(),
-          ],
-        );
-      },),
+          ];
+
+          return Navigator(
+            pages: [
+              MaterialPage(
+                key: ValueKey(selectedPage),
+                child: pages[selectedPage],
+              ),
+            ],
+          );
+        },
+      ),
       bottomNavigationBar: NavigationBarWidget(),
     );
   }

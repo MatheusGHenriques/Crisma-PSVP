@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../data/notifiers.dart';
+
 class TagButtonWidget extends StatefulWidget {
   final String text;
   final Map<String, bool> tagMap;
@@ -14,11 +16,18 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
   @override
   Widget build(BuildContext context) {
     active = widget.tagMap[widget.text]?? false;
-    return OutlinedButton(onPressed: () async {
+    return OutlinedButton(onPressed: (){
       setState(() {
         active = !active;
       });
       widget.tagMap[widget.text] = active;
+      hasSelectedTagNotifier.value = false;
+      for (String tag in widget.tagMap.keys) {
+        if (widget.tagMap[tag] == true) {
+          hasSelectedTagNotifier.value = true;
+          return;
+        }
+      }
     },
       style: OutlinedButton.styleFrom(
         foregroundColor: active? Colors.white : Colors.redAccent,
