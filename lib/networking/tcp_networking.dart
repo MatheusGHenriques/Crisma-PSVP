@@ -12,7 +12,6 @@ class PeerToPeerTcpNetworking {
   RawDatagramSocket? _udpSocket;
   final String deviceName = userName;
   final Box chatBox = Hive.box("chatBox");
-  final Box hashMessageBox = Hive.box("hashMessageBox");
 
   final List<Socket> _peers = [];
   final Map<Socket, String> _socketBuffers = {};
@@ -24,15 +23,16 @@ class PeerToPeerTcpNetworking {
   final Set<Socket> _syncSentOnSocket = {};
 
   // In-memory set for deduplication.
-  final Set<String> _inMemoryMessageHashes = {};
+  late Set<Message> _chatBoxMessages;
 
   Future<void> start() async {
+    _chatBoxMessages = chatBox.values.cast<Message>().toSet();
     _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, port);
     _serverSocket?.listen(_handleIncomingConnection);
     await _startUdpDiscovery();
     sendUdpDiscoveryRequest();
   }
-
+  
   Future<void> _startUdpDiscovery() async {
     _udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, port);
     _udpSocket!.broadcastEnabled = true;
@@ -83,10 +83,10 @@ class PeerToPeerTcpNetworking {
 
   /// Sends a TCP discovery request that includes the sender's name.
   void _sendTcpDiscoveryRequest(Socket socket) {
-    String jsonString = json.encode({
+    String jsonString = "${json.encode({
       'type': 'discovery_request',
       'sender': deviceName,
-    }) + "\n";
+    })}\n";
     socket.write(jsonString);
   }
 
@@ -97,11 +97,11 @@ class PeerToPeerTcpNetworking {
         .map((message) => message.toJson())
         .toList();
 
-    String jsonString = json.encode({
+    String jsonString = "${json.encode({
       'type': 'sync',
       'payload': messages,
       'sender': deviceName,
-    }) + "\n";
+    })}\n";
     socket.write(jsonString);
   }
 
@@ -253,10 +253,10 @@ class PeerToPeerTcpNetworking {
   /// Sends a new message and propagates it to all connected peers.
   void sendMessage(Message message) {
     _addMessageToChatBox(message);
-    String jsonString = json.encode({
+    String jsonString = "${json.encode({
       'type': 'message',
       'payload': message.toJson(),
-    }) + "\n";
+    })}\n";
     for (Socket peer in _peers) {
       peer.write(jsonString);
     }
@@ -264,57 +264,19 @@ class PeerToPeerTcpNetworking {
 
   /// Allows a device to actively trigger a discovery request over all TCP connections.
   void sendDiscoveryRequest() {
-    String jsonString = json.encode({
+    String jsonString = "${json.encode({
       'type': 'discovery_request',
       'sender': deviceName,
-    }) + "\n";
+    })}\n";
     for (Socket peer in _peers) {
       peer.write(jsonString);
     }
   }
 
-  void _addMessageToChatBox(Message message) {
-    String messageHash = _generateMessageHash(message);
-    // Check for duplicates in persistent storage and in-memory.
-    if (hashMessageBox.values.contains(messageHash) ||
-        _inMemoryMessageHashes.contains(messageHash)) return;
-
-    hashMessageBox.add(messageHash);
-    chatBox.add(message);
-    _inMemoryMessageHashes.add(messageHash);
-    _cleanupDuplicateMessages();
-  }
-
-  void _cleanupDuplicateMessages() {
-    Set<String> seenHashes = {};
-    List<dynamic> duplicateKeys = [];
-
-    for (var key in chatBox.keys) {
-      Message message = chatBox.get(key);
-      String hash = _generateMessageHash(message);
-      if (seenHashes.contains(hash)) {
-        duplicateKeys.add(key);
-      } else {
-        seenHashes.add(hash);
-      }
+  Future<void> _addMessageToChatBox(Message message) async {
+    if(!_chatBoxMessages.contains(message)){
+      _chatBoxMessages.add(message);
+      await chatBox.add(message);
     }
-
-    for (var key in duplicateKeys) {
-      chatBox.delete(key);
-    }
-    _inMemoryMessageHashes.clear();
-    for (var key in chatBox.keys) {
-      Message message = chatBox.get(key);
-      _inMemoryMessageHashes.add(_generateMessageHash(message));
-    }
-  }
-
-  String _generateMessageHash(Message message) {
-    var sortedTags = message.tags.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
-    String tagsString = sortedTags
-        .map((e) => '${e.key}:${e.value.toString()}')
-        .join(',');
-    return '${message.text}-${message.sender}-$tagsString-${message.time.toIso8601String()}';
   }
 }

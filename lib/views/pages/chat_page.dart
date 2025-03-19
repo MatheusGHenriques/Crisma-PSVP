@@ -1,7 +1,7 @@
 import 'package:crisma/data/message.dart';
 import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/views/widgets/message_widget.dart';
-import 'package:crisma/views/widgets/tag_button_widget.dart';
+import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import '../../data/user_info.dart';
@@ -10,7 +10,6 @@ class ChatPage extends StatefulWidget {
   final Function(Message) onSendMessage;
 
   const ChatPage({super.key, required this.onSendMessage});
-
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -22,8 +21,6 @@ class _ChatPageState extends State<ChatPage> {
   bool _hasMessage = false;
 
   final chatBox = Hive.box("chatBox");
-
-
 
   @override
   void initState() {
@@ -56,11 +53,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void sendButtonClicked() {
     final newTags = Map<String, bool>.from(selectedTags);
-    Message messageToSend = Message(
-      tags: newTags,
-      sender: userName,
-      text: _sendMessageController.text,
-    );
+    Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text);
     widget.onSendMessage(messageToSend);
     _sendMessageController.clear();
     _initTags();
@@ -76,15 +69,6 @@ class _ChatPageState extends State<ChatPage> {
       }
     }
     return false;
-  }
-
-  String _generateMessageHash(Message message) {
-    var sortedTags = message.tags.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
-    String tagsString = sortedTags
-        .map((e) => '${e.key}:${e.value.toString()}')
-        .join(',');
-    return '${message.text}-${message.sender}-$tagsString-${message.time.toIso8601String()}';
   }
 
   @override
@@ -111,28 +95,14 @@ class _ChatPageState extends State<ChatPage> {
                     child: ValueListenableBuilder(
                       valueListenable: chatBox.listenable(),
                       builder: (context, box, child) {
-                        List<Message> messages =
-                        box.values.cast<Message>().toList();
+                        List<Message> messages = box.values.cast<Message>().toList();
                         messages.sort((a, b) => a.time.compareTo(b.time));
                         return Column(
                           spacing: 5,
-                          children: messages.fold<List<Widget>>([], (widgets, message) {
-                            // Initialize a Set to track seen message hashes
-                            Set<String> seenMessages = <String>{};
-
-                            // Generate a unique hash for the message to detect duplicates
-                            String messageHash = _generateMessageHash(message);
-
-                            // Check if the message has already been processed (i.e., if it's a duplicate)
-                            if (!seenMessages.contains(messageHash) && userHasMessageTags(message)) {
-                              seenMessages.add(messageHash); // Mark the message as seen
-                              widgets.add(MessageWidget(message: message)); // Add the message to the list
-                            }
-
-                            return widgets;
+                          children: List.generate(messages.length, (index) {
+                            return MessageWidget(message: messages.elementAt(index));
                           }),
                         );
-
                       },
                     ),
                   ),
@@ -141,56 +111,6 @@ class _ChatPageState extends State<ChatPage> {
                   spacing: 2,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    ValueListenableBuilder(
-                      valueListenable: chatHasSelectedTagNotifier,
-                      builder: (context, hasSelectedTag, child) {
-                        return IconButton.filledTonal(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return Dialog(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(25)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Wrap(
-                                      spacing: 5,
-                                      crossAxisAlignment:
-                                      WrapCrossAlignment.center,
-                                      alignment: WrapAlignment.center,
-                                      children: List.generate(
-                                        selectedTags.length,
-                                            (index) {
-                                          return TagButtonWidget(
-                                            text: selectedTags.keys
-                                                .elementAt(index),
-                                            tagMap: selectedTags,
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ).then((value) {
-                              chatHasSelectedTagNotifier.value = false;
-                              for (String tag in selectedTags.keys) {
-                                if (selectedTags[tag] == true) {
-                                  chatHasSelectedTagNotifier.value = true;
-                                }
-                              }
-                            });
-                          },
-                          icon: const Icon(Icons.tag_rounded),
-                          style: ButtonStyle(
-                            backgroundColor: hasSelectedTag
-                                ? const WidgetStatePropertyAll(Colors.redAccent)
-                                : null,
-                          ),
-                        );
-                      },
-                    ),
                     Expanded(
                       child: TextField(
                         controller: _sendMessageController,
@@ -198,27 +118,54 @@ class _ChatPageState extends State<ChatPage> {
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           hintText: "Digite uma mensagem",
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25)),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 10),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                         ),
-                        enableInteractiveSelection: false,
-                        enableSuggestions: false,
                       ),
                     ),
                     IconButton.filledTonal(
-                      onPressed: _hasMessage && chatHasSelectedTagNotifier.value
-                          ? () {
-                        sendButtonClicked();
-                      }
-                          : null,
-                      icon: const Icon(Icons.send_rounded),
+                      onPressed:
+                          _hasMessage && chatHasSelectedTagNotifier.value
+                              ? () {
+                                sendButtonClicked();
+                              }
+                              : _hasMessage
+                              ? () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return Dialog(
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: TagSelectionWidget(tags: selectedTags),
+                                      ),
+                                    );
+                                  },
+                                ).then((value) {
+                                  for (String tag in selectedTags.keys) {
+                                    if (selectedTags[tag]!) {
+                                      chatHasSelectedTagNotifier.value = true;
+                                    }
+                                  }
+                                });
+                              }
+                              : null, //talvez mandar um audio
+                      icon: ValueListenableBuilder(
+                        valueListenable: chatHasSelectedTagNotifier,
+                        builder: (context, chatHasSelectedTag, child) {
+                          return _hasMessage && chatHasSelectedTag
+                              ? Icon(Icons.send_rounded)
+                              : _hasMessage
+                              ? Icon(Icons.tag_rounded)
+                              : Icon(Icons.chat_rounded);
+                        },
+                      ),
                       style: ButtonStyle(
-                        backgroundColor: _hasMessage &&
-                            chatHasSelectedTagNotifier.value
-                            ? const WidgetStatePropertyAll(Colors.redAccent)
-                            : null,
+                        backgroundColor:
+                            _hasMessage && chatHasSelectedTagNotifier.value
+                                ? const WidgetStatePropertyAll(Colors.redAccent)
+                                : null,
                       ),
                     ),
                   ],

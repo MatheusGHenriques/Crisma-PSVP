@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/views/widget_tree.dart';
 import 'package:crisma/views/widgets/tag_button_widget.dart';
+import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:crisma/views/widgets/theme_mode_button.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -80,18 +79,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
               TextField(
                 textAlign: TextAlign.center,
-                enableSuggestions: false,
                 decoration: InputDecoration(hintText: "Digite seu nome aqui"),
                 controller: _nameController,
               ),
               Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
-              Wrap(
-                spacing: 10.0,
-                alignment: WrapAlignment.center,
-                children: List.generate(userTags.length, (index) {
-                  return TagButtonWidget(text: userTags.keys.elementAt(index), tagMap: userTags);
-                }),
-              ),
+              TagSelectionWidget(tags: userTags),
               FilledButton(
                 onPressed:
                     _hasName
@@ -109,6 +101,9 @@ class _LoginPageState extends State<LoginPage> {
                         : null,
                 child: Text("Continuar"),
               ),
+              SizedBox(
+                height: 20,
+              )
             ],
           ),
         ),
