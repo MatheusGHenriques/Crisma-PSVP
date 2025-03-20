@@ -1,6 +1,7 @@
 late String userName;
 
 Map<String, bool> userTags = {
+  "Geral": true,
   "Coordenação": false,
   "Música": false,
   "Suporte": false,

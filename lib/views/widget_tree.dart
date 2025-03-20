@@ -1,4 +1,5 @@
 import 'package:crisma/views/pages/chat_page.dart';
+import 'package:crisma/views/pages/custom_page.dart';
 import 'package:crisma/views/pages/home_page.dart';
 import 'package:crisma/views/pages/login_page.dart';
 import 'package:crisma/views/pages/schedule_page.dart';
@@ -21,6 +22,7 @@ class WidgetTree extends StatefulWidget {
 
 class _WidgetTreeState extends State<WidgetTree> {
   late PeerToPeerTcpNetworking _tcpNetworking;
+  int _previousPage = 0;
 
   @override
   void initState() {
@@ -79,8 +81,14 @@ class _WidgetTreeState extends State<WidgetTree> {
         valueListenable: selectedPageNotifier,
         builder: (context, selectedPage, child) {
           final pages = [HomePage(), ChatPage(onSendMessage: tcpSendMessage), TasksPage(), SchedulePage()];
-
-          return Navigator(pages: [MaterialPage(key: ValueKey(selectedPage), child: pages[selectedPage])]);
+          final page = CustomPage(
+            key: ValueKey(selectedPage),
+            newIndex: selectedPage,
+            oldIndex: _previousPage,
+            child: pages[selectedPage],
+          );
+          _previousPage = selectedPage;
+          return Navigator(pages: [page]);
         },
       ),
       bottomNavigationBar: NavigationBarWidget(),

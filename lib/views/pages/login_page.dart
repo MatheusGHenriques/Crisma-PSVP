@@ -1,6 +1,5 @@
 import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/views/widget_tree.dart';
-import 'package:crisma/views/widgets/tag_button_widget.dart';
 import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:crisma/views/widgets/theme_mode_button.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +18,16 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _nameController = TextEditingController();
   bool _hasName = false;
+  Map<String, bool> loginTags = {
+    "Coordenação": false,
+    "Música": false,
+    "Suporte": false,
+    "Animação": false,
+    "Cozinha": false,
+    "Mídias": false,
+    "Homens": false,
+    "Mulheres": false,
+  };
 
   @override
   void initState() {
@@ -34,9 +43,6 @@ class _LoginPageState extends State<LoginPage> {
   void resetUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.username);
-    for (String tag in userTags.keys) {
-      userTags[tag] = false;
-    }
   }
 
   @override
@@ -48,6 +54,9 @@ class _LoginPageState extends State<LoginPage> {
     userName = _nameController.text;
     selectedPageNotifier.value = 0;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    for (String tag in loginTags.keys) {
+      userTags[tag] = loginTags[tag]!;
+    }
     await prefs.setString(Constants.username, userName);
     for (String tag in userTags.keys) {
       await prefs.setBool(tag, userTags[tag]!);
@@ -82,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _nameController,
               ),
               Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
-              TagSelectionWidget(tags: userTags),
+              TagSelectionWidget(tags: loginTags),
               FilledButton(
                 onPressed:
                     _hasName
@@ -92,7 +101,6 @@ class _LoginPageState extends State<LoginPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) {
-                                userTags["Geral"] = true;
                                 return WidgetTree();
                               },
                             ),

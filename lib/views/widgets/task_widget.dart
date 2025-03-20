@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive_ce/hive.dart';
 
 import '../../data/notifiers.dart';
 import '../../data/task.dart';
@@ -29,22 +28,61 @@ class _TaskWidgetState extends State<TaskWidget> {
     List<Text> persons = [];
     late Text text;
     for (String person in widget.task.persons.keys) {
+      if (persons.isNotEmpty) {
+        persons.add(Text(", "));
+      }
       if (widget.task.persons[person]!) {
-        text = Text(person);
+        text = Text(person, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold));
       } else {
-        text = Text(person, style: TextStyle(color: Colors.green));
+        text = Text(person, style: TextStyle(fontWeight: FontWeight.bold));
       }
       persons.add(text);
     }
     return persons;
   }
 
-  void _deleteTask() async{
+  bool _isTaskDone() {
+    for (bool isDone in widget.task.persons.values) {
+      if (!isDone) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void _deleteTask() async {
+    widget.task.numberOfPersons = -1;
     widget.task.delete();
+    //enviar tarefa com -1 pessoas por exemplo (deletar)
+  }
+
+  void _concludeTask() {
+    setState(() {
+      widget.task.persons[userName] = true;
+    });
+    //enviar tarefa atualizada
+  }
+
+  void _acceptTask() {
+    setState(() {
+      widget.task.numberOfPersons--;
+      widget.task.persons[userName] = false;
+    });
+    //enviar tarefa atualizada
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.task.numberOfPersons < 0) {
+      widget.task.delete();
+    }
+    if ((widget.task.persons[userName] != null && widget.task.persons[userName]! == true) ||
+        (widget.task.numberOfPersons == 0 &&
+            widget.task.sender != userName &&
+            !widget.task.persons.containsKey(userName))) {
+      return SizedBox();
+    }
+
     return ValueListenableBuilder(
       valueListenable: isDarkModeNotifier,
       builder: (context, isDarkMode, child) {
@@ -61,6 +99,7 @@ class _TaskWidgetState extends State<TaskWidget> {
                     : Color.alphaBlend(Colors.red.withAlpha(50), Colors.white),
           ),
           child: Row(
+            spacing: 20,
             children: [
               Expanded(
                 child: Column(
@@ -96,10 +135,22 @@ class _TaskWidgetState extends State<TaskWidget> {
                     onPressed: () {
                       _deleteTask();
                     },
-                    icon: Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                    icon:
+                        _isTaskDone()
+                            ? Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black)
+                            : Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                  )
+                  : widget.task.persons.containsKey(userName)
+                  ? IconButton(
+                    onPressed: () {
+                      _concludeTask();
+                    },
+                    icon: Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black),
                   )
                   : IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _acceptTask();
+                    },
                     icon: Icon(Icons.person_add_alt_1, color: isDarkMode ? Colors.white : Colors.black),
                   ),
             ],
