@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  file_picker: ^9.2.1
   flutter:
     sdk: flutter
 
@@ -36,7 +37,6 @@ dependencies:
   hive_ce: ^2.10.1
   hive_ce_flutter: ^2.2.0
   shared_preferences: ^2.5.2
-  udp: ^5.0.3
 
 dev_dependencies:
   flutter_test:

@@ -59,7 +59,7 @@ class _ChatPageState extends State<ChatPage> {
     if (message.sender == userName) {
       return true;
     }
-    for (String tag in message.tags.keys) {
+    for(String tag in message.tags.keys) {
       if (message.tags[tag]! && userTags[tag]!) {
         return true;
       }
@@ -96,7 +96,10 @@ class _ChatPageState extends State<ChatPage> {
                         return Column(
                           spacing: 5,
                           children: List.generate(messages.length, (index) {
-                            return MessageWidget(message: messages.elementAt(index));
+                            if(userHasMessageTags(messages.elementAt(index))) {
+                              return MessageWidget(message: messages.elementAt(index));
+                            }
+                            return SizedBox();
                           }),
                         );
                       },

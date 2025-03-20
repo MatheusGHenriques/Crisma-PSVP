@@ -80,7 +80,6 @@ class PeerToPeerTcpNetworking {
     socket.write(jsonString);
   }
 
-  /// Updated sync response to include both messages and tasks.
   void _sendSyncResponse(Socket socket) {
     List<Map<String, dynamic>> messages = chatBox.values
         .cast<Message>()
@@ -170,7 +169,6 @@ class PeerToPeerTcpNetworking {
           Task task = Task.fromJson(jsonData['payload']);
           _addTaskToTaskBox(task);
         } else if (type == 'sync') {
-          // Updated sync handling: expecting a payload with messages and tasks.
           Map<String, dynamic> payload = jsonData['payload'];
           if (payload.containsKey('messages')) {
             for (var messageJson in payload['messages']) {
