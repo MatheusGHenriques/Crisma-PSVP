@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_ce/hive.dart';
 
 class CreateNewTaskWidget extends StatefulWidget {
-  const CreateNewTaskWidget({super.key});
+  final Function(Task) onSendTask;
+  const CreateNewTaskWidget({super.key, required this.onSendTask});
 
   @override
   State<CreateNewTaskWidget> createState() => _CreateNewTaskWidgetState();
@@ -31,8 +32,9 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
   };
 
   void _createNewTask() {
-    //o certo eh mandar para o TCP e ele adicionar na box
-    taskBox.add(Task(sender: userName, numberOfPersons: _numberOfPersons, description: _taskDescriptionController.text, tags: _newTaskTags));
+    final newTags = Map<String, bool>.from(_newTaskTags);
+    Task taskToSend = Task(sender: userName, numberOfPersons: _numberOfPersons, description: _taskDescriptionController.text, tags: newTags);
+    widget.onSendTask(taskToSend);
   }
 
   void initController(){
@@ -48,6 +50,12 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
     hasSelectedTagNotifier.value = false;
     initController();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _taskDescriptionController.dispose();
+    super.dispose();
   }
 
   @override

@@ -6,8 +6,9 @@ import '../../data/user_info.dart';
 
 class TaskWidget extends StatefulWidget {
   final Task task;
+  final Function(Task) onSendTask;
 
-  const TaskWidget({super.key, required this.task});
+  const TaskWidget({super.key, required this.task, required this.onSendTask});
 
   @override
   State<TaskWidget> createState() => _TaskWidgetState();
@@ -42,6 +43,7 @@ class _TaskWidgetState extends State<TaskWidget> {
   }
 
   bool _isTaskDone() {
+    if (widget.task.persons.isEmpty || widget.task.numberOfPersons > 0) return false;
     for (bool isDone in widget.task.persons.values) {
       if (!isDone) {
         return false;
@@ -50,32 +52,31 @@ class _TaskWidgetState extends State<TaskWidget> {
     return true;
   }
 
-  void _deleteTask() async {
+  void _sendTask() {
+    widget.onSendTask(widget.task);
+    setState(() async {
+      await widget.task.save();
+    });
+  }
+
+  void _deleteTask() {
     widget.task.numberOfPersons = -1;
-    widget.task.delete();
-    //enviar tarefa com -1 pessoas por exemplo (deletar)
+    _sendTask();
   }
 
   void _concludeTask() {
-    setState(() {
-      widget.task.persons[userName] = true;
-    });
-    //enviar tarefa atualizada
+    widget.task.persons[userName] = true;
+    _sendTask();
   }
 
   void _acceptTask() {
-    setState(() {
-      widget.task.numberOfPersons--;
-      widget.task.persons[userName] = false;
-    });
-    //enviar tarefa atualizada
+    widget.task.numberOfPersons--;
+    widget.task.persons[userName] = false;
+    _sendTask();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.task.numberOfPersons < 0) {
-      widget.task.delete();
-    }
     if ((widget.task.persons[userName] != null && widget.task.persons[userName]! == true) ||
         (widget.task.numberOfPersons == 0 &&
             widget.task.sender != userName &&

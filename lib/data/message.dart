@@ -6,15 +6,11 @@ class Message extends HiveObject {
   late String text;
   late DateTime time;
 
-  Message({required this.tags, required this.sender, required this.text, DateTime? time}) : time = time?.subtract(Duration(microseconds: time.microsecond)) ?? DateTime.now().subtract(Duration(microseconds: DateTime.now().microsecond));
+  Message({required this.tags, required this.sender, required this.text, DateTime? time})
+    : time = (time ?? DateTime.now()).copyWith(microsecond: 0);
 
   Map<String, dynamic> toJson() {
-    return {
-      'tags': tags,
-      'sender': sender,
-      'text': text,
-      'time': time.toIso8601String(),
-    };
+    return {'tags': tags, 'sender': sender, 'text': text, 'time': time.toIso8601String()};
   }
 
   static Message fromJson(Map<String, dynamic> json) {
@@ -31,18 +27,12 @@ class Message extends HiveObject {
     if (identical(this, other)) return true;
     if (other is! Message) return false;
 
-    return text == other.text &&
-        sender == other.sender &&
-        time == other.time &&
-        _mapsEqual(tags, other.tags);
+    return text == other.text && sender == other.sender && time == other.time && _mapsEqual(tags, other.tags);
   }
 
   @override
   int get hashCode {
-    return text.hashCode ^
-    sender.hashCode ^
-    time.hashCode ^
-    _mapHash(tags);
+    return text.hashCode ^ sender.hashCode ^ time.hashCode ^ _mapHash(tags);
   }
 
   bool _mapsEqual(Map<String, bool> a, Map<String, bool> b) {

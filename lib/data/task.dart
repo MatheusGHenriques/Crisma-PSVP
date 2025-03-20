@@ -15,10 +15,8 @@ class Task extends HiveObject {
     required this.description,
     required this.tags,
     DateTime? time,
-  }) : persons = persons ?? {},
-       time =
-           time?.subtract(Duration(microseconds: time.microsecond)) ??
-           DateTime.now().subtract(Duration(microseconds: DateTime.now().microsecond));
+  })  : persons = persons ?? {},
+        time = (time ?? DateTime.now()).copyWith(microsecond: 0);
 
   Map<String, dynamic> toJson() {
     return {
@@ -49,28 +47,11 @@ class Task extends HiveObject {
 
     return description == other.description &&
         sender == other.sender &&
-        time == other.time &&
-        _mapsEqual(tags, other.tags);
+        time == other.time;
   }
 
   @override
-  int get hashCode {
-    return description.hashCode ^ sender.hashCode ^ time.hashCode ^ _mapHash(tags);
-  }
-
-  bool _mapsEqual(Map<String, bool> a, Map<String, bool> b) {
-    if (a.length != b.length) return false;
-    for (final key in a.keys) {
-      if (a[key] != b[key]) return false;
-    }
-    return true;
-  }
-
-  int _mapHash(Map<String, bool> map) {
-    int result = 0;
-    for (final entry in map.entries) {
-      result ^= entry.key.hashCode ^ entry.value.hashCode;
-    }
-    return result;
+  int get hashCode{
+    return description.hashCode ^ sender.hashCode ^ time.hashCode;
   }
 }

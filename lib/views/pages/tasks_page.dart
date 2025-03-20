@@ -7,7 +7,8 @@ import '../../data/user_info.dart';
 import '../widgets/task_widget.dart';
 
 class TasksPage extends StatefulWidget {
-  const TasksPage({super.key});
+  final Function(Task) onSendTask;
+  const TasksPage({super.key, required this.onSendTask});
 
   @override
   State<TasksPage> createState() => _TasksPageState();
@@ -38,11 +39,13 @@ class _TasksPageState extends State<TasksPage> {
                   List<Task> createdTasks = [], acceptedTasks = [], availableTasks = [];
                   
                   for(Task task in tasks){
-                    if(userName == task.sender){
+                    if(task.numberOfPersons < 0){
+                      task.delete();
+                    }else if(userName == task.sender){
                       createdTasks.add(task);
-                    }else if(task.persons.containsKey(userName)){
+                    }else if(task.persons.containsKey(userName) && task.persons[userName] == false){
                       acceptedTasks.add(task);
-                    }else{
+                    }else if(!task.persons.containsKey(userName)){
                       availableTasks.add(task);
                     }
                   }
@@ -62,7 +65,7 @@ class _TasksPageState extends State<TasksPage> {
                           children: List.generate(map[title]!.length, (index) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),
-                              child: TaskWidget(task: map[title]!.elementAt(index)),
+                              child: TaskWidget(task: map[title]!.elementAt(index), onSendTask: widget.onSendTask,),
                             );
                           }),
                         );
@@ -80,7 +83,7 @@ class _TasksPageState extends State<TasksPage> {
                         showDialog(
                           context: context,
                           builder: (context) {
-                            return CreateNewTaskWidget();
+                            return CreateNewTaskWidget(onSendTask: widget.onSendTask,);
                           },
                         );
                       },

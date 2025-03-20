@@ -9,6 +9,7 @@ import 'package:crisma/views/widgets/theme_mode_button.dart';
 
 import '../data/message.dart';
 import '../data/notifiers.dart';
+import '../data/task.dart';
 import '../data/user_info.dart';
 import '../networking/tcp_networking.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +40,10 @@ class _WidgetTreeState extends State<WidgetTree> {
     _tcpNetworking.sendMessage(messageToSend);
   }
 
+  void tcpSendTask(Task taskToSend){
+    _tcpNetworking.sendTask(taskToSend);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,9 +51,9 @@ class _WidgetTreeState extends State<WidgetTree> {
         title: Text("Crisma PSVP"),
         centerTitle: true,
         leading: ValueListenableBuilder(
-          valueListenable: hasConnectedPeerNotifier,
-          builder: (context, hasConnectedPeer, child) {
-            return hasConnectedPeer
+          valueListenable: connectedPeersNotifier,
+          builder: (context, connectedPeers, child) {
+            return connectedPeers > 0
                 ? Icon(Icons.signal_wifi_4_bar_rounded)
                 : IconButton(
                   onPressed: _tcpNetworking.sendUdpDiscoveryRequest,
@@ -80,7 +85,7 @@ class _WidgetTreeState extends State<WidgetTree> {
       body: ValueListenableBuilder<int>(
         valueListenable: selectedPageNotifier,
         builder: (context, selectedPage, child) {
-          final pages = [HomePage(), ChatPage(onSendMessage: tcpSendMessage), TasksPage(), SchedulePage()];
+          final pages = [HomePage(), ChatPage(onSendMessage: tcpSendMessage), TasksPage(onSendTask: tcpSendTask), SchedulePage()];
           final page = CustomPage(
             key: ValueKey(selectedPage),
             newIndex: selectedPage,

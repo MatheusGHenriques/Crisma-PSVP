@@ -5,6 +5,7 @@ import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/data/user_info.dart';
 import 'package:hive_ce/hive.dart';
 import '../data/message.dart';
+import '../data/task.dart';
 
 class PeerToPeerTcpNetworking {
   static const int port = 64128;
@@ -12,17 +13,15 @@ class PeerToPeerTcpNetworking {
   RawDatagramSocket? _udpSocket;
   final String deviceName = userName;
   final Box chatBox = Hive.box("chatBox");
+  final Box taskBox = Hive.box("taskBox");
 
   final List<Socket> _peers = [];
   final Map<Socket, String> _socketBuffers = {};
 
-  // Track remote device names and connection type (outgoing/incoming)
   final Map<Socket, String> _socketDeviceNames = {};
   final Map<Socket, bool> _socketIsOutgoing = {};
-  // Ensure we send a sync response only once per discovery on a given socket.
   final Set<Socket> _syncSentOnSocket = {};
 
-  // In-memory set for deduplication.
   late Set<Message> _chatBoxMessages;
 
   Future<void> start() async {
@@ -32,7 +31,7 @@ class PeerToPeerTcpNetworking {
     await _startUdpDiscovery();
     sendUdpDiscoveryRequest();
   }
-  
+
   Future<void> _startUdpDiscovery() async {
     _udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, port, reuseAddress: true, reusePort: true);
     _udpSocket!.broadcastEnabled = true;
@@ -57,9 +56,7 @@ class PeerToPeerTcpNetworking {
       } else if (jsonData['type'] == 'discovery_response') {
         if (jsonData['sender'] != deviceName) {
           String peerIp = datagram.address.address;
-          bool alreadyConnected = _peers.any(
-                (socket) => socket.remoteAddress.address == peerIp,
-          );
+          bool alreadyConnected = _peers.any((socket) => socket.remoteAddress.address == peerIp);
           if (!alreadyConnected) {
             connectToPeer(peerIp);
           }
@@ -69,10 +66,7 @@ class PeerToPeerTcpNetworking {
   }
 
   void _sendUdpDiscoveryResponse(InternetAddress recipient) {
-    String jsonString = json.encode({
-      'type': 'discovery_response',
-      'sender': deviceName,
-    });
+    String jsonString = json.encode({'type': 'discovery_response', 'sender': deviceName});
     _udpSocket?.send(utf8.encode(jsonString), recipient, port);
   }
 
@@ -81,27 +75,29 @@ class PeerToPeerTcpNetworking {
     _udpSocket?.send(utf8.encode(jsonString), InternetAddress("255.255.255.255"), port);
   }
 
-  /// Sends a TCP discovery request that includes the sender's name.
   void _sendTcpDiscoveryRequest(Socket socket) {
-    String jsonString = "${json.encode({
-      'type': 'discovery_request',
-      'sender': deviceName,
-    })}\n";
+    String jsonString = "${json.encode({'type': 'discovery_request', 'sender': deviceName})}\n";
     socket.write(jsonString);
   }
 
-  /// Instead of sending individual messages, send a "sync" message with all messages.
+  /// Updated sync response to include both messages and tasks.
   void _sendSyncResponse(Socket socket) {
     List<Map<String, dynamic>> messages = chatBox.values
         .cast<Message>()
         .map((message) => message.toJson())
         .toList();
 
+    List<Map<String, dynamic>> tasks = taskBox.values
+        .cast<Task>()
+        .map((task) => task.toJson())
+        .toList();
+
     String jsonString = "${json.encode({
       'type': 'sync',
-      'payload': messages,
-      'sender': deviceName,
+      'payload': {'messages': messages, 'tasks': tasks},
+      'sender': deviceName
     })}\n";
+
     socket.write(jsonString);
   }
 
@@ -111,7 +107,6 @@ class PeerToPeerTcpNetworking {
       _addPeer(socket, isOutgoing: true);
       _socketBuffers[socket] = '';
 
-      // After connecting, send a TCP discovery request so the remote device sends a sync response.
       Future.delayed(const Duration(milliseconds: 100), () {
         _sendTcpDiscoveryRequest(socket);
       });
@@ -137,7 +132,6 @@ class PeerToPeerTcpNetworking {
     _addPeer(socket, isOutgoing: false);
     _socketBuffers[socket] = '';
 
-    // For incoming connections, also trigger a TCP discovery request after a short delay.
     Future.delayed(const Duration(milliseconds: 100), () {
       _sendTcpDiscoveryRequest(socket);
     });
@@ -172,21 +166,30 @@ class PeerToPeerTcpNetworking {
           Message message = Message.fromJson(jsonData['payload']);
           if (message.sender == deviceName) continue;
           _addMessageToChatBox(message);
+        } else if (type == 'task') {
+          Task task = Task.fromJson(jsonData['payload']);
+          _addTaskToTaskBox(task);
         } else if (type == 'sync') {
-          // A sync payload containing a list of messages.
-          List<dynamic> payload = jsonData['payload'];
-          for (var messageJson in payload) {
-            Message message = Message.fromJson(messageJson);
-            if (message.sender != deviceName) {
-              _addMessageToChatBox(message);
+          // Updated sync handling: expecting a payload with messages and tasks.
+          Map<String, dynamic> payload = jsonData['payload'];
+          if (payload.containsKey('messages')) {
+            for (var messageJson in payload['messages']) {
+              Message message = Message.fromJson(messageJson);
+              if (message.sender != deviceName) {
+                _addMessageToChatBox(message);
+              }
+            }
+          }
+          if (payload.containsKey('tasks')) {
+            for (var taskJson in payload['tasks']) {
+              Task task = Task.fromJson(taskJson);
+              _addTaskToTaskBox(task);
             }
           }
         } else if (type == 'discovery_request') {
-          // Record the remote device name for connection arbitration.
           if (jsonData.containsKey('sender')) {
             String remoteName = jsonData['sender'];
             _socketDeviceNames[socket] = remoteName;
-            // Connection arbitration logic (if duplicate exists, decide which one to keep).
             for (Socket other in _socketDeviceNames.keys) {
               if (other == socket) continue;
               if (_socketDeviceNames[other] == remoteName) {
@@ -217,7 +220,6 @@ class PeerToPeerTcpNetworking {
               }
             }
           }
-          // When a discovery request arrives, send a sync response if not already sent on this socket.
           if (!_syncSentOnSocket.contains(socket)) {
             _syncSentOnSocket.add(socket);
             _sendSyncResponse(socket);
@@ -234,9 +236,7 @@ class PeerToPeerTcpNetworking {
       _peers.add(socket);
       _socketIsOutgoing[socket] = isOutgoing;
     }
-    if (_peers.isNotEmpty) {
-      hasConnectedPeerNotifier.value = true;
-    }
+    connectedPeersNotifier.value = _peers.length;
   }
 
   void _removePeer(Socket socket) {
@@ -245,38 +245,58 @@ class PeerToPeerTcpNetworking {
     _socketDeviceNames.remove(socket);
     _socketIsOutgoing.remove(socket);
     _syncSentOnSocket.remove(socket);
-    if (_peers.isEmpty) {
-      hasConnectedPeerNotifier.value = false;
-    }
+
+    connectedPeersNotifier.value = _peers.length;
   }
 
-  /// Sends a new message and propagates it to all connected peers.
   void sendMessage(Message message) {
     _addMessageToChatBox(message);
-    String jsonString = "${json.encode({
-      'type': 'message',
-      'payload': message.toJson(),
-    })}\n";
+    String jsonString = "${json.encode({'type': 'message', 'payload': message.toJson()})}\n";
     for (Socket peer in _peers) {
       peer.write(jsonString);
     }
   }
 
-  /// Allows a device to actively trigger a discovery request over all TCP connections.
+  void sendTask(Task task) {
+    _addTaskToTaskBox(task);
+    String jsonString = "${json.encode({'type': 'task', 'payload': task.toJson()})}\n";
+    for (Socket peer in _peers) {
+      peer.write(jsonString);
+    }
+  }
+
   void sendDiscoveryRequest() {
-    String jsonString = "${json.encode({
-      'type': 'discovery_request',
-      'sender': deviceName,
-    })}\n";
+    String jsonString = "${json.encode({'type': 'discovery_request', 'sender': deviceName})}\n";
     for (Socket peer in _peers) {
       peer.write(jsonString);
     }
   }
 
-  Future<void> _addMessageToChatBox(Message message) async {
-    if(!_chatBoxMessages.contains(message)){
+  void _addMessageToChatBox(Message message) async {
+    if (!_chatBoxMessages.contains(message)) {
       _chatBoxMessages.add(message);
       await chatBox.add(message);
+    }
+  }
+
+  void _addTaskToTaskBox(Task task) async {
+    bool containsTask = false;
+    bool addTask = false;
+
+    for (Task boxTask in taskBox.values) {
+      if(task == boxTask){
+        containsTask = true;
+        if(task.numberOfPersons < boxTask.numberOfPersons || task.persons != boxTask.persons){
+          addTask = true;
+          await boxTask.delete();
+        }
+        break;
+      }
+    }
+
+    if (addTask || !containsTask) {
+      await taskBox.add(task);
+      await task.save();
     }
   }
 }
