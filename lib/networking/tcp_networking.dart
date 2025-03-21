@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/data/user_info.dart';
@@ -67,7 +66,6 @@ class PeerToPeerTcpNetworking {
       try {
         jsonData = json.decode(dataStr);
       } catch (e) {
-        log('Error decoding UDP message: $e');
         return;
       }
 
@@ -134,7 +132,6 @@ class PeerToPeerTcpNetworking {
       socket.listen(
             (data) => _handleIncomingData(socket, data),
         onError: (error) {
-          log('Error on socket from $ipAddress: $error');
           _removePeer(socket);
           socket.close();
         },
@@ -144,7 +141,7 @@ class PeerToPeerTcpNetworking {
         },
       );
     } catch (e) {
-      log('Failed to connect to peer $ipAddress: $e');
+      return;
     }
   }
 
@@ -159,12 +156,10 @@ class PeerToPeerTcpNetworking {
     socket.listen(
           (data) => _handleIncomingData(socket, data),
       onError: (error) {
-        log('Error on incoming TCP socket: $error');
         _removePeer(socket);
         socket.close();
       },
       onDone: () {
-        log('TCP peer disconnected: ${socket.remoteAddress.address}');
         _removePeer(socket);
         socket.close();
       },
@@ -224,21 +219,18 @@ class PeerToPeerTcpNetworking {
                 if (thisIsOutgoing != otherIsOutgoing) {
                   if (deviceName.compareTo(remoteName) < 0) {
                     if (!thisIsOutgoing) {
-                      log('Arbitration: closing duplicate incoming connection from $remoteName');
                       socket.close();
                       _removePeer(socket);
                       return;
                     }
                   } else {
                     if (thisIsOutgoing) {
-                      log('Arbitration: closing duplicate outgoing connection to $remoteName');
                       socket.close();
                       _removePeer(socket);
                       return;
                     }
                   }
                 } else {
-                  log('Arbitration: duplicate connection with same type for $remoteName; closing later connection');
                   socket.close();
                   _removePeer(socket);
                   return;
@@ -252,7 +244,7 @@ class PeerToPeerTcpNetworking {
           }
         }
       } catch (e) {
-        log('Error decoding message: $e');
+        return;
       }
     }
   }

@@ -55,44 +55,49 @@ class _SchedulePageState extends State<SchedulePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  ValueListenableBuilder(
-                    valueListenable: _pdfBox.listenable(),
-                    builder: (context, box, child) {
-                      return FutureBuilder<String?>(
-                        future: _getPdf(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasData && snapshot.data != null) {
-                            return SizedBox(
-                              height: constraints.maxHeight,
-                              width: MediaQuery.of(context).size.width,
-                              child: PDFView(filePath: snapshot.data!),
-                            );
-                          } else {
-                            return SizedBox(
-                              height: constraints.maxHeight,
-                              width: MediaQuery.of(context).size.width,
-                              child: Align(alignment: Alignment.center, child: Text("Nenhum PDF por enquanto")),
-                            );
-                          }
-                        },
-                      );
+          child: Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              ValueListenableBuilder(
+                valueListenable: _pdfBox.listenable(),
+                builder: (context, box, child) {
+                  return FutureBuilder<String?>(
+                    future: _getPdf(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasData && snapshot.data != null) {
+                        return SizedBox(
+                          height: constraints.maxHeight,
+                          width: MediaQuery.of(context).size.width,
+                          child: ValueListenableBuilder(
+                            valueListenable: isDarkModeNotifier,
+                            builder: (context, isDarkMode, child) {
+                              return PDFView(key: ValueKey(isDarkMode),filePath: snapshot.data!, nightMode: isDarkMode);
+                            },
+                          ),
+                        );
+                      } else {
+                        return SizedBox(
+                          height: constraints.maxHeight,
+                          width: MediaQuery.of(context).size.width,
+                          child: Align(alignment: Alignment.center, child: Text("Nenhum PDF por enquanto")),
+                        );
+                      }
                     },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: FloatingActionButton(
-                      backgroundColor: Colors.redAccent,
-                      onPressed: _pickAndStorePDF,
-                      child: Icon(Icons.upload_rounded),
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: FloatingActionButton(
+                  backgroundColor: Colors.redAccent,
+                  onPressed: _pickAndStorePDF,
+                  child: Icon(Icons.upload_rounded),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
