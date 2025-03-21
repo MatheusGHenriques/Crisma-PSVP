@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:crisma/views/pages/chat_page.dart';
 import 'package:crisma/views/pages/custom_page.dart';
 import 'package:crisma/views/pages/home_page.dart';
@@ -30,6 +32,12 @@ class _WidgetTreeState extends State<WidgetTree> {
   void initState() {
     _initNetworking();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tcpNetworking.dispose();
+    super.dispose();
   }
 
   void _initNetworking() async {
@@ -90,7 +98,7 @@ class _WidgetTreeState extends State<WidgetTree> {
       body: ValueListenableBuilder<int>(
         valueListenable: selectedPageNotifier,
         builder: (context, selectedPage, child) {
-          final pages = [HomePage(), ChatPage(onSendMessage: tcpSendMessage), TasksPage(onSendTask: tcpSendTask), SchedulePage(onSendPdf: tcpSendPdf,)];
+          final pages = [HomePage(tcpNetworking: _tcpNetworking,), ChatPage(onSendMessage: tcpSendMessage), TasksPage(onSendTask: tcpSendTask), SchedulePage(onSendPdf: tcpSendPdf,)];
           final page = CustomPage(
             key: ValueKey(selectedPage),
             newIndex: selectedPage,

@@ -11,6 +11,18 @@ class ChatPage extends StatefulWidget {
 
   const ChatPage({super.key, required this.onSendMessage});
 
+  static bool userHasMessageTags(Message message) {
+    if (message.sender == userName) {
+      return true;
+    }
+    for (String tag in message.tags.keys) {
+      if (message.tags[tag]! && userTags[tag]!) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
@@ -55,21 +67,12 @@ class _ChatPageState extends State<ChatPage> {
     _sendMessageController.clear();
   }
 
-  bool _userHasMessageTags(Message message) {
-    if (message.sender == userName) {
-      return true;
-    }
-    for(String tag in message.tags.keys) {
-      if (message.tags[tag]! && userTags[tag]!) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   @override
   void dispose() {
     _sendMessageController.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unreadMessagesNotifier.value = 0;
+    });
     super.dispose();
   }
 
@@ -94,12 +97,24 @@ class _ChatPageState extends State<ChatPage> {
                         List<Message> messages = box.values.cast<Message>().toList();
                         messages.sort((a, b) => a.time.compareTo(b.time));
                         messages.removeWhere((element) {
-                          return !_userHasMessageTags(element);
-                        },);
-                        return Column(
+                          return !ChatPage.userHasMessageTags(element);
+                        });
+                        int newMessagesIndicatorPosition = messages.length - unreadMessagesNotifier.value;
+                        return unreadMessagesNotifier.value > 0? Column(
+                          spacing: 5,
+                          children: List.generate(messages.length+1, (index) {
+                            return newMessagesIndicatorPosition == index? Row(
+                              children: [
+                                Expanded(child: Divider(thickness: 2,)),
+                                Text(" Novas Mensagens "),
+                                Expanded(child: Divider(thickness: 2,)),
+                              ],
+                            ) : newMessagesIndicatorPosition < index? MessageWidget(message: messages.elementAt(index-1)) : MessageWidget(message: messages.elementAt(index));
+                          }),
+                        ) : Column(
                           spacing: 5,
                           children: List.generate(messages.length, (index) {
-                              return MessageWidget(message: messages.elementAt(index));
+                            return MessageWidget(message: messages.elementAt(index));
                           }),
                         );
                       },
@@ -140,8 +155,8 @@ class _ChatPageState extends State<ChatPage> {
                         valueListenable: hasSelectedTagNotifier,
                         builder: (context, hasSelectedTag, child) {
                           _stringTags = "";
-                          for(String tag in selectedTags.keys){
-                            if(selectedTags[tag]!){
+                          for (String tag in selectedTags.keys) {
+                            if (selectedTags[tag]!) {
                               _stringTags += "@$tag ";
                             }
                           }
@@ -150,7 +165,7 @@ class _ChatPageState extends State<ChatPage> {
                             maxLines: null,
                             keyboardType: TextInputType.multiline,
                             decoration: InputDecoration(
-                              hintText: hasSelectedTag? _stringTags : "Digite uma mensagem",
+                              hintText: hasSelectedTag ? _stringTags : "Digite uma mensagem",
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                             ),

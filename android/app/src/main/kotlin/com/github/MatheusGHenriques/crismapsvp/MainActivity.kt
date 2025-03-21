@@ -1,4 +1,4 @@
-package com.example.crisma
+package com.github.MatheusGHenriques.crismapsvp
 
 import io.flutter.embedding.android.FlutterActivity
 

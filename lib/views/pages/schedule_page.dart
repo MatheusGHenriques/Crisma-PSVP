@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/data/pdf.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -42,14 +43,18 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updatedScheduleNotifier.value = false;
+    });
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SizedBox(
-          height: constraints.maxHeight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SingleChildScrollView(
+        return SingleChildScrollView(
               child: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
@@ -79,7 +84,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     },
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.all(20),
                     child: FloatingActionButton(
                       backgroundColor: Colors.redAccent,
                       onPressed: _pickAndStorePDF,
@@ -88,8 +93,6 @@ class _SchedulePageState extends State<SchedulePage> {
                   ),
                 ],
               ),
-            ),
-          ),
         );
       },
     );

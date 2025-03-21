@@ -1,3 +1,4 @@
+import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/views/widgets/create_new_task_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
@@ -10,6 +11,15 @@ class TasksPage extends StatefulWidget {
   final Function(Task) onSendTask;
   const TasksPage({super.key, required this.onSendTask});
 
+  static bool userHasTaskTags(Task task) {
+    for(String tag in task.tags.keys) {
+      if (task.tags[tag]! && userTags[tag]!) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   State<TasksPage> createState() => _TasksPageState();
 }
@@ -17,13 +27,13 @@ class TasksPage extends StatefulWidget {
 class _TasksPageState extends State<TasksPage> {
   final _taskBox = Hive.box("taskBox");
 
-  bool _userHasTaskTags(Task task) {
-    for(String tag in task.tags.keys) {
-      if (task.tags[tag]! && userTags[tag]!) {
-        return true;
-      }
-    }
-    return false;
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      newTasksNotifier.value = 0;
+    });
+
+    super.dispose();
   }
 
   @override
@@ -54,7 +64,7 @@ class _TasksPageState extends State<TasksPage> {
                       createdTasks.add(task);
                     }else if(task.persons.containsKey(userName) && task.persons[userName] == false){
                       acceptedTasks.add(task);
-                    }else if(!task.persons.containsKey(userName) && _userHasTaskTags(task)){
+                    }else if(!task.persons.containsKey(userName) && TasksPage.userHasTaskTags(task)){
                       availableTasks.add(task);
                     }
                   }

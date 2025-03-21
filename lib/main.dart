@@ -18,6 +18,7 @@ void main() async {
   await Hive.openBox("chatBox");
   await Hive.openBox("taskBox");
   await Hive.openBox("pdfBox");
+  await Hive.openBox("homeBox");
   runApp(MyApp());
 }
 

@@ -70,7 +70,6 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(actions: [ThemeModeButton()]),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
-        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -81,8 +80,8 @@ class _LoginPageState extends State<LoginPage> {
                 builder: (context, darkMode, child) {
                   return Image.asset(
                     darkMode ? 'assets/images/compact_dark_logo.png' : 'assets/images/compact_light_logo.png',
-                    height: 200.0,
-                    width: 117.0,
+                    height: MediaQuery.of(context).size.height/3,
+                    width: MediaQuery.of(context).size.width/2,
                   );
                 },
               ),
@@ -116,7 +115,6 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
         ),
-      ),
     );
   }
 }

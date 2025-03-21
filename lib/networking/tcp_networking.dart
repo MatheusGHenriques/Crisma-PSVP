@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/data/user_info.dart';
+import 'package:crisma/views/pages/chat_page.dart';
+import 'package:crisma/views/pages/tasks_page.dart';
 import 'package:hive_ce/hive.dart';
 import '../data/message.dart';
 import '../data/pdf.dart';
@@ -20,7 +22,7 @@ class PeerToPeerTcpNetworking {
   final List<Socket> _peers = [];
   final Map<Socket, String> _socketBuffers = {};
 
-  final Map<Socket, String> _socketDeviceNames = {};
+  final Map<Socket, String> socketDeviceNames = {};
   final Map<Socket, bool> _socketIsOutgoing = {};
   final Set<Socket> _syncSentOnSocket = {};
 
@@ -32,6 +34,22 @@ class PeerToPeerTcpNetworking {
     _serverSocket?.listen(_handleIncomingConnection);
     await _startUdpDiscovery();
     sendUdpDiscoveryRequest();
+  }
+
+  void dispose(){
+    _serverSocket?.close();
+    _serverSocket = null;
+    _udpSocket?.close();
+    _udpSocket = null;
+    for (Socket peer in _peers) {
+      peer.close();
+    }
+    _peers.clear();
+    _socketBuffers.clear();
+    socketDeviceNames.clear();
+    _socketIsOutgoing.clear();
+    _syncSentOnSocket.clear();
+    connectedPeersNotifier.value = 0;
   }
 
   Future<void> _startUdpDiscovery() async {
@@ -60,6 +78,7 @@ class PeerToPeerTcpNetworking {
           String peerIp = datagram.address.address;
           bool alreadyConnected = _peers.any((socket) => socket.remoteAddress.address == peerIp);
           if (!alreadyConnected) {
+
             connectToPeer(peerIp);
           }
         }
@@ -196,10 +215,10 @@ class PeerToPeerTcpNetworking {
         } else if (type == 'discovery_request') {
           if (jsonData.containsKey('sender')) {
             String remoteName = jsonData['sender'];
-            _socketDeviceNames[socket] = remoteName;
-            for (Socket other in _socketDeviceNames.keys) {
+            socketDeviceNames[socket] = remoteName;
+            for (Socket other in socketDeviceNames.keys) {
               if (other == socket) continue;
-              if (_socketDeviceNames[other] == remoteName) {
+              if (socketDeviceNames[other] == remoteName) {
                 bool thisIsOutgoing = _socketIsOutgoing[socket] ?? false;
                 bool otherIsOutgoing = _socketIsOutgoing[other] ?? false;
                 if (thisIsOutgoing != otherIsOutgoing) {
@@ -249,7 +268,7 @@ class PeerToPeerTcpNetworking {
   void _removePeer(Socket socket) {
     _peers.remove(socket);
     _socketBuffers.remove(socket);
-    _socketDeviceNames.remove(socket);
+    socketDeviceNames.remove(socket);
     _socketIsOutgoing.remove(socket);
     _syncSentOnSocket.remove(socket);
 
@@ -288,6 +307,9 @@ class PeerToPeerTcpNetworking {
 
   void _addMessageToChatBox(Message message) async {
     if (!_chatBoxMessages.contains(message)) {
+      if(ChatPage.userHasMessageTags(message) && message.sender != userName){
+        unreadMessagesNotifier.value++;
+      }
       _chatBoxMessages.add(message);
       await chatBox.add(message);
     }
@@ -307,14 +329,18 @@ class PeerToPeerTcpNetworking {
     }
 
     if (addTask || !containsTask) {
+      if(TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0){
+        newTasksNotifier.value++;
+      }
       await taskBox.add(task);
       await task.save();
     }
   }
 
   void _addPdfToPdfBox(Pdf pdf) async {
-    if(pdfBox.isEmpty || (!(pdf == pdfBox.values.single) && pdf.time.isBefore(pdfBox.values.single))) {
-      pdfBox.put("pdf", pdf);
+    if(pdfBox.isEmpty || await pdfBox.get("pdf").time.isBefore(pdf.time)){
+      await pdfBox.put("pdf", pdf);
+      updatedScheduleNotifier.value = true;
     }
   }
 }
