@@ -5,6 +5,7 @@ import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/data/user_info.dart';
 import 'package:hive_ce/hive.dart';
 import '../data/message.dart';
+import '../data/pdf.dart';
 import '../data/task.dart';
 
 class PeerToPeerTcpNetworking {
@@ -14,6 +15,7 @@ class PeerToPeerTcpNetworking {
   final String deviceName = userName;
   final Box chatBox = Hive.box("chatBox");
   final Box taskBox = Hive.box("taskBox");
+  final Box pdfBox = Hive.box("pdfBox");
 
   final List<Socket> _peers = [];
   final Map<Socket, String> _socketBuffers = {};
@@ -168,6 +170,9 @@ class PeerToPeerTcpNetworking {
         } else if (type == 'task') {
           Task task = Task.fromJson(jsonData['payload']);
           _addTaskToTaskBox(task);
+        } else if(type == 'pdf'){
+          Pdf pdf = Pdf.fromJson(jsonData['payload']);
+          _addPdfToPdfBox(pdf);
         } else if (type == 'sync') {
           Map<String, dynamic> payload = jsonData['payload'];
           if (payload.containsKey('messages')) {
@@ -183,6 +188,10 @@ class PeerToPeerTcpNetworking {
               Task task = Task.fromJson(taskJson);
               _addTaskToTaskBox(task);
             }
+          }
+          if(payload.containsKey('pdf')){
+            Pdf pdf = Pdf.fromJson(payload['pdf']);
+            _addPdfToPdfBox(pdf);
           }
         } else if (type == 'discovery_request') {
           if (jsonData.containsKey('sender')) {
@@ -263,6 +272,13 @@ class PeerToPeerTcpNetworking {
     }
   }
 
+  void sendPdf(Pdf pdf){
+    String jsonString = "${json.encode({'type': 'pdf', 'payload': pdf.toJson()})}\n";
+    for(Socket peer in _peers){
+      peer.write(jsonString);
+    }
+  }
+
   void sendDiscoveryRequest() {
     String jsonString = "${json.encode({'type': 'discovery_request', 'sender': deviceName})}\n";
     for (Socket peer in _peers) {
@@ -278,9 +294,7 @@ class PeerToPeerTcpNetworking {
   }
 
   void _addTaskToTaskBox(Task task) async {
-    bool containsTask = false;
-    bool addTask = false;
-
+    bool containsTask = false, addTask = false;
     for (Task boxTask in taskBox.values) {
       if(task == boxTask){
         containsTask = true;
@@ -295,6 +309,12 @@ class PeerToPeerTcpNetworking {
     if (addTask || !containsTask) {
       await taskBox.add(task);
       await task.save();
+    }
+  }
+
+  void _addPdfToPdfBox(Pdf pdf) async {
+    if(pdfBox.isEmpty || (!(pdf == pdfBox.values.single) && pdf.time.isBefore(pdfBox.values.single))) {
+      pdfBox.put("pdf", pdf);
     }
   }
 }

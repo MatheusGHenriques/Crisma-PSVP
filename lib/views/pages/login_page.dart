@@ -57,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     for (String tag in loginTags.keys) {
       userTags[tag] = loginTags[tag]!;
     }
+    userTags["Geral"] = true;
     await prefs.setString(Constants.username, userName);
     for (String tag in userTags.keys) {
       await prefs.setBool(tag, userTags[tag]!);

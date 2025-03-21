@@ -14,8 +14,10 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(MessageAdapter());
   Hive.registerAdapter(TaskAdapter());
+  Hive.registerAdapter(PdfAdapter());
   await Hive.openBox("chatBox");
   await Hive.openBox("taskBox");
+  await Hive.openBox("pdfBox");
   runApp(MyApp());
 }
 

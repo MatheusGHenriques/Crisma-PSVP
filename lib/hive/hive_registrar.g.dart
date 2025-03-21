@@ -8,6 +8,7 @@ import 'package:crisma/hive/hive_adapters.dart';
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
     registerAdapter(MessageAdapter());
+    registerAdapter(PdfAdapter());
     registerAdapter(TaskAdapter());
   }
 }

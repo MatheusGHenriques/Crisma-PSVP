@@ -15,7 +15,16 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  final taskBox = Hive.box("taskBox");
+  final _taskBox = Hive.box("taskBox");
+
+  bool _userHasTaskTags(Task task) {
+    for(String tag in task.tags.keys) {
+      if (task.tags[tag]! && userTags[tag]!) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +40,7 @@ class _TasksPageState extends State<TasksPage> {
               spacing: 10,
               children: [
                 Expanded(child: ValueListenableBuilder(
-                valueListenable: taskBox.listenable(),
+                valueListenable: _taskBox.listenable(),
                 builder: (context, box, child) {
                   List<Task> tasks = box.values.cast<Task>().toList();
                   tasks.sort((a, b) => a.time.compareTo(b.time));
@@ -45,7 +54,7 @@ class _TasksPageState extends State<TasksPage> {
                       createdTasks.add(task);
                     }else if(task.persons.containsKey(userName) && task.persons[userName] == false){
                       acceptedTasks.add(task);
-                    }else if(!task.persons.containsKey(userName)){
+                    }else if(!task.persons.containsKey(userName) && _userHasTaskTags(task)){
                       availableTasks.add(task);
                     }
                   }
@@ -75,7 +84,7 @@ class _TasksPageState extends State<TasksPage> {
               ),
             ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     FloatingActionButton(
                       backgroundColor: Colors.redAccent,

@@ -9,6 +9,7 @@ import 'package:crisma/views/widgets/theme_mode_button.dart';
 
 import '../data/message.dart';
 import '../data/notifiers.dart';
+import '../data/pdf.dart';
 import '../data/task.dart';
 import '../data/user_info.dart';
 import '../networking/tcp_networking.dart';
@@ -42,6 +43,10 @@ class _WidgetTreeState extends State<WidgetTree> {
 
   void tcpSendTask(Task taskToSend){
     _tcpNetworking.sendTask(taskToSend);
+  }
+
+  void tcpSendPdf(Pdf pdfToSend){
+    _tcpNetworking.sendPdf(pdfToSend);
   }
 
   @override
@@ -85,7 +90,7 @@ class _WidgetTreeState extends State<WidgetTree> {
       body: ValueListenableBuilder<int>(
         valueListenable: selectedPageNotifier,
         builder: (context, selectedPage, child) {
-          final pages = [HomePage(), ChatPage(onSendMessage: tcpSendMessage), TasksPage(onSendTask: tcpSendTask), SchedulePage()];
+          final pages = [HomePage(), ChatPage(onSendMessage: tcpSendMessage), TasksPage(onSendTask: tcpSendTask), SchedulePage(onSendPdf: tcpSendPdf,)];
           final page = CustomPage(
             key: ValueKey(selectedPage),
             newIndex: selectedPage,

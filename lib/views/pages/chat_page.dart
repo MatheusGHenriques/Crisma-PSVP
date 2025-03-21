@@ -55,7 +55,7 @@ class _ChatPageState extends State<ChatPage> {
     _sendMessageController.clear();
   }
 
-  bool userHasMessageTags(Message message) {
+  bool _userHasMessageTags(Message message) {
     if (message.sender == userName) {
       return true;
     }
@@ -93,13 +93,13 @@ class _ChatPageState extends State<ChatPage> {
                       builder: (context, box, child) {
                         List<Message> messages = box.values.cast<Message>().toList();
                         messages.sort((a, b) => a.time.compareTo(b.time));
+                        messages.removeWhere((element) {
+                          return !_userHasMessageTags(element);
+                        },);
                         return Column(
                           spacing: 5,
                           children: List.generate(messages.length, (index) {
-                            if(userHasMessageTags(messages.elementAt(index))) {
                               return MessageWidget(message: messages.elementAt(index));
-                            }
-                            return SizedBox();
                           }),
                         );
                       },
