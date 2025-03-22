@@ -110,9 +110,11 @@ class PeerToPeerTcpNetworking {
         .map((task) => task.toJson())
         .toList();
 
+    Map<String, dynamic> pdf = pdfBox.get("pdf").toJson();
+
     String jsonString = "${json.encode({
       'type': 'sync',
-      'payload': {'messages': messages, 'tasks': tasks},
+      'payload': {'messages': messages, 'tasks': tasks, 'pdf': pdf},
       'sender': deviceName
     })}\n";
 
