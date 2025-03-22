@@ -1,10 +1,8 @@
-import 'package:crisma/data/constants.dart';
 import 'package:crisma/hive/hive_adapters.dart';
 import 'package:crisma/views/pages/login_page.dart';
 import 'package:crisma/views/widget_tree.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/notifiers.dart';
 import 'data/user_info.dart';
@@ -31,25 +29,25 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _loaded = false;
+  final Box _homeBox = Hive.box("homeBox");
 
   @override
   void initState() {
-    super.initState();
     initThemeMode();
     getUser();
+    super.initState();
   }
 
   void initThemeMode() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool? darkMode = prefs.getBool(Constants.themeModeKey);
+    bool? darkMode = await _homeBox.get("themeModeKey");
     isDarkModeNotifier.value = darkMode ?? false;
+    // trocar entre o tema padrao e o tema do retiro
   }
 
   void getUser() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    userName = prefs.getString(Constants.username) ?? "";
+    userName = await _homeBox.get("userName") ?? "";
     for (String tag in userTags.keys) {
-      userTags[tag] = prefs.getBool(tag) ?? false;
+      userTags[tag] = await _homeBox.get(tag) ?? false;
     }
     setState(() {
       _loaded = true;
@@ -64,25 +62,25 @@ class _MyAppState extends State<MyApp> {
         return FadeTransition(opacity: animation, child: child);
       },
       child:
-          _loaded
-              ? ValueListenableBuilder(
-                valueListenable: isDarkModeNotifier,
-                builder: (context, darkMode, child) {
-                  return MaterialApp(
-                    debugShowCheckedModeBanner: false,
-                    theme: ThemeData(
-                      colorScheme: ColorScheme.fromSeed(
-                        seedColor: Colors.redAccent,
-                        brightness: darkMode ? Brightness.dark : Brightness.light,
-                      ),
-                    ),
-                    home: userName == "" ? LoginPage() : WidgetTree(),
-                  );
-                },
-              )
-              : ColoredBox(
-                color: Colors.redAccent,
+      _loaded
+          ? ValueListenableBuilder(
+        valueListenable: isDarkModeNotifier,
+        builder: (context, darkMode, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.redAccent,
+                brightness: darkMode ? Brightness.dark : Brightness.light,
               ),
+            ),
+            home: userName == "" ? LoginPage() : WidgetTree(),
+          );
+        },
+      )
+          : ColoredBox(
+        color: Colors.redAccent,
+      ),
     );
   }
 }

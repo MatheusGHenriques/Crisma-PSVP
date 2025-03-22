@@ -1,6 +1,5 @@
-import 'package:crisma/data/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_ce/hive.dart';
 import '../../data/notifiers.dart';
 
 class ThemeModeButton extends StatefulWidget {
@@ -11,13 +10,14 @@ class ThemeModeButton extends StatefulWidget {
 }
 
 class _ThemeModeButtonState extends State<ThemeModeButton> {
+  final Box _homeBox = Hive.box("homeBox");
+
   @override
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () async{
         isDarkModeNotifier.value = !isDarkModeNotifier.value;
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool(Constants.themeModeKey, isDarkModeNotifier.value);
+        await _homeBox.put("themeModeKey", isDarkModeNotifier.value);
       },
       icon: ValueListenableBuilder(
         valueListenable: isDarkModeNotifier,

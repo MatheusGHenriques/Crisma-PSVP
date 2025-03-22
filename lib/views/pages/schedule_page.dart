@@ -32,14 +32,63 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _pickAndStorePDF() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
-    if (result != null) {
-      File file = File(result.files.single.path!);
-      List<int> fileBytes = await file.readAsBytes();
-      String base64String = base64Encode(fileBytes);
-      await _pdfBox.put("pdf", Pdf(base64String: base64String));
-      widget.onSendPdf(_pdfBox.values.single);
-    }
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+      if (result != null) {
+        File file = File(result.files.single.path!);
+        List<int> fileBytes = await file.readAsBytes();
+        String base64String = base64Encode(fileBytes);
+        await _pdfBox.put("pdf", Pdf(base64String: base64String));
+        widget.onSendPdf(_pdfBox.values.single);
+      }
+  }
+
+  void _checkToUpdatePdf() {
+    ValueNotifier<bool> continueButtonEnabledNotifier = ValueNotifier(false);
+    TextEditingController controller = TextEditingController();
+    controller.addListener(() {
+      if (controller.text == 'Atualizar PDF') {
+        continueButtonEnabledNotifier.value = true;
+      }
+    });
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 5,
+                children: [
+                  Text(
+                    'Digite "Atualizar PDF" abaixo caso queira atualizar o Cronograma. Se nao, clique fora dessa caixa.',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  TextField(controller: controller, textAlign: TextAlign.center, maxLength: 13,),
+                  ValueListenableBuilder(
+                    valueListenable: continueButtonEnabledNotifier,
+                    builder: (context, continueButtonEnabled, child) {
+                      return FilledButton(
+                        onPressed:
+                            continueButtonEnabled
+                                ? () {
+                                  Navigator.pop(context);
+                                  _pickAndStorePDF();
+                                }
+                                : null,
+                        child: Text("Atualizar Cronograma"),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -73,7 +122,11 @@ class _SchedulePageState extends State<SchedulePage> {
                           child: ValueListenableBuilder(
                             valueListenable: isDarkModeNotifier,
                             builder: (context, isDarkMode, child) {
-                              return PDFView(key: ValueKey(isDarkMode),filePath: snapshot.data!, nightMode: isDarkMode);
+                              return PDFView(
+                                key: ValueKey(isDarkMode),
+                                filePath: snapshot.data!,
+                                nightMode: isDarkMode,
+                              );
                             },
                           ),
                         );
@@ -92,7 +145,7 @@ class _SchedulePageState extends State<SchedulePage> {
                 padding: const EdgeInsets.all(20),
                 child: FloatingActionButton(
                   backgroundColor: Colors.redAccent,
-                  onPressed: _pickAndStorePDF,
+                  onPressed: _checkToUpdatePdf,
                   child: Icon(Icons.upload_rounded),
                 ),
               ),

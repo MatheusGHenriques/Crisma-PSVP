@@ -47,7 +47,7 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
 
   @override
   void initState() {
-    hasSelectedTagNotifier.value = false;
+    selectedTagsNotifier.value = 0;
     initController();
     super.initState();
   }
@@ -110,9 +110,9 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
               SizedBox(height: 5),
               Text("Quem pode concluir essa tarefa?"),
               TagSelectionWidget(tags: _newTaskTags),
-              ValueListenableBuilder(valueListenable: hasSelectedTagNotifier, builder: (context, hasSelectedTag, child) {
+              ValueListenableBuilder(valueListenable: selectedTagsNotifier, builder: (context, selectedTagsNumber, child) {
                 return FilledButton(
-                  onPressed: _hasDescription && hasSelectedTag? () {
+                  onPressed: _hasDescription && selectedTagsNumber > 0? () {
                       _createNewTask();
                       Navigator.pop(context);
                   } : null,

@@ -47,7 +47,7 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void initState() {
-    hasSelectedTagNotifier.value = false;
+    selectedTagsNotifier.value = 0;
     _initController();
     super.initState();
   }
@@ -126,8 +126,8 @@ class _ChatPageState extends State<ChatPage> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     ValueListenableBuilder(
-                      valueListenable: hasSelectedTagNotifier,
-                      builder: (context, hasSelectedTag, child) {
+                      valueListenable: selectedTagsNotifier,
+                      builder: (context, selectedTagsNumber, child) {
                         return IconButton.filledTonal(
                           onPressed: () {
                             showDialog(
@@ -145,15 +145,15 @@ class _ChatPageState extends State<ChatPage> {
                           },
                           icon: const Icon(Icons.tag_rounded),
                           style: ButtonStyle(
-                            backgroundColor: hasSelectedTag ? const WidgetStatePropertyAll(Colors.redAccent) : null,
+                            backgroundColor: selectedTagsNumber > 0 ? const WidgetStatePropertyAll(Colors.redAccent) : null,
                           ),
                         );
                       },
                     ),
                     Expanded(
                       child: ValueListenableBuilder(
-                        valueListenable: hasSelectedTagNotifier,
-                        builder: (context, hasSelectedTag, child) {
+                        valueListenable: selectedTagsNotifier,
+                        builder: (context, selectedTagsNumber, child) {
                           _stringTags = "";
                           for (String tag in selectedTags.keys) {
                             if (selectedTags[tag]!) {
@@ -165,7 +165,7 @@ class _ChatPageState extends State<ChatPage> {
                             maxLines: null,
                             keyboardType: TextInputType.multiline,
                             decoration: InputDecoration(
-                              hintText: hasSelectedTag ? _stringTags : "Digite uma mensagem",
+                              hintText: selectedTagsNumber > 0 ? _stringTags : "Digite uma mensagem",
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                             ),
@@ -177,7 +177,7 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                     IconButton.filledTonal(
                       onPressed:
-                          _hasMessage && hasSelectedTagNotifier.value
+                          _hasMessage && selectedTagsNotifier.value > 0
                               ? () {
                                 sendButtonClicked();
                               }
@@ -185,7 +185,7 @@ class _ChatPageState extends State<ChatPage> {
                       icon: const Icon(Icons.send_rounded),
                       style: ButtonStyle(
                         backgroundColor:
-                            _hasMessage && hasSelectedTagNotifier.value
+                            _hasMessage && selectedTagsNotifier.value > 0
                                 ? const WidgetStatePropertyAll(Colors.redAccent)
                                 : null,
                       ),

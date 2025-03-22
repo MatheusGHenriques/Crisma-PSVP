@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 ValueNotifier<bool> isDarkModeNotifier = ValueNotifier(false);
 ValueNotifier<int> selectedPageNotifier = ValueNotifier(0);
-ValueNotifier<bool> hasSelectedTagNotifier = ValueNotifier(false);
+ValueNotifier<int> selectedTagsNotifier = ValueNotifier(0);
 ValueNotifier<bool> isChatBoxInitializedNotifier = ValueNotifier(false);
 ValueNotifier<int> connectedPeersNotifier = ValueNotifier(0);
 ValueNotifier<int> unreadMessagesNotifier = ValueNotifier(0);

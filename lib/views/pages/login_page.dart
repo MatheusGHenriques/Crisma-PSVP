@@ -3,9 +3,7 @@ import 'package:crisma/views/widget_tree.dart';
 import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:crisma/views/widgets/theme_mode_button.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../data/constants.dart';
+import 'package:hive_ce/hive.dart';
 import '../../data/user_info.dart';
 
 class LoginPage extends StatefulWidget {
@@ -17,7 +15,9 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _nameController = TextEditingController();
+  final Box _homeBox = Hive.box("homeBox");
   bool _hasName = false;
+
   Map<String, bool> loginTags = {
     "Coordenação": false,
     "Música": false,
@@ -31,18 +31,17 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    super.initState();
     resetUser();
     _nameController.addListener(() {
       setState(() {
         _hasName = _nameController.text.isNotEmpty;
       });
     });
+    super.initState();
   }
 
   void resetUser() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove(Constants.username);
+    await _homeBox.delete("userName");
   }
 
   @override
@@ -53,14 +52,13 @@ class _LoginPageState extends State<LoginPage> {
   void pressedContinueButton() async {
     userName = _nameController.text;
     selectedPageNotifier.value = 0;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     for (String tag in loginTags.keys) {
       userTags[tag] = loginTags[tag]!;
     }
     userTags["Geral"] = true;
-    await prefs.setString(Constants.username, userName);
+    await _homeBox.put("userName", userName);
     for (String tag in userTags.keys) {
-      await prefs.setBool(tag, userTags[tag]!);
+      await _homeBox.put(tag, userTags[tag]!);
     }
   }
 
@@ -91,24 +89,26 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _nameController,
               ),
               Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
-              TagSelectionWidget(tags: loginTags),
-              FilledButton(
-                onPressed:
-                    _hasName
-                        ? () {
-                          pressedContinueButton();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return WidgetTree();
-                              },
-                            ),
-                          );
-                        }
-                        : null,
-                child: Text("Continuar"),
-              ),
+              TagSelectionWidget(tags: loginTags, login: true,),
+              ValueListenableBuilder(valueListenable: selectedTagsNotifier, builder: (context, selectedTagsNumber, child) {
+                return  FilledButton(
+                  onPressed:
+                  _hasName && (loginTags['Homens']! || loginTags['Mulheres']!)
+                      ? () {
+                    pressedContinueButton();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return WidgetTree();
+                        },
+                      ),
+                    );
+                  }
+                      : null,
+                  child: Text("Continuar"),
+                );
+              },),
               SizedBox(
                 height: 20,
               )
