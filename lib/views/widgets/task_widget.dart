@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/data/custom_colors.dart';
+import '/data/custom_themes.dart';
 import '/main.dart';
 import '/data/notifiers.dart';
 import '/data/task.dart';
@@ -91,10 +91,10 @@ class _TaskWidgetState extends State<TaskWidget> {
             borderRadius: BorderRadius.all(Radius.circular(25)),
             color:
                 widget.task.sender == userName
-                    ? CustomColors.secondaryLightColor(colorTheme)
+                    ? CustomThemes.secondaryLightColor(colorTheme)
                     : isDarkMode
-                    ? CustomColors.darkBackgroundColor(colorTheme)
-                    : CustomColors.lightBackgroundColor(colorTheme),
+                    ? CustomThemes.darkBackgroundColor(colorTheme)
+                    : CustomThemes.lightBackgroundColor(colorTheme),
           ),
           child: Row(
             spacing: 20,
@@ -108,7 +108,7 @@ class _TaskWidgetState extends State<TaskWidget> {
                         ? Text(
                           widget.task.sender,
                           style: TextStyle(
-                            color: CustomColors.mainColor(colorTheme),
+                            color: CustomThemes.mainColor(colorTheme),
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -119,7 +119,7 @@ class _TaskWidgetState extends State<TaskWidget> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: CustomColors.secondaryDarkColor(colorTheme),
+                        color: CustomThemes.secondaryDarkColor(colorTheme),
                       ),
                     ),
                     Text(

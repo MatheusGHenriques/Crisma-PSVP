@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '/data/message.dart';
 import '/data/user_info.dart';
 import '/main.dart';
-import '/data/custom_colors.dart';
+import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 
 class MessageWidget extends StatelessWidget {
@@ -34,10 +34,10 @@ class MessageWidget extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(25)),
               color:
                   message.sender == userName
-                      ? CustomColors.secondaryLightColor(colorTheme)
+                      ? CustomThemes.secondaryLightColor(colorTheme)
                       : isDarkMode
-                      ? CustomColors.darkBackgroundColor(colorTheme)
-                      : CustomColors.lightBackgroundColor(colorTheme),
+                      ? CustomThemes.darkBackgroundColor(colorTheme)
+                      : CustomThemes.lightBackgroundColor(colorTheme),
             ),
             child:
                 message.sender != userName
@@ -48,7 +48,7 @@ class MessageWidget extends StatelessWidget {
                         Text(
                           message.sender,
                           style: TextStyle(
-                            color: CustomColors.mainColor(colorTheme),
+                            color: CustomThemes.mainColor(colorTheme),
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -58,7 +58,7 @@ class MessageWidget extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: CustomColors.secondaryDarkColor(colorTheme),
+                            color: CustomThemes.secondaryDarkColor(colorTheme),
                           ),
                         ),
                         Text(
@@ -80,7 +80,7 @@ class MessageWidget extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: CustomColors.secondaryDarkColor(colorTheme),
+                            color: CustomThemes.secondaryDarkColor(colorTheme),
                           ),
                         ),
                         Text(

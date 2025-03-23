@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-import '/data/custom_colors.dart';
+import '/data/custom_themes.dart';
 import '/data/message.dart';
 import '/data/notifiers.dart';
 import '/main.dart';
@@ -155,7 +155,7 @@ class _ChatPageState extends State<ChatPage> {
                           style: ButtonStyle(
                             backgroundColor:
                                 selectedTagsNumber > 0
-                                    ? WidgetStatePropertyAll(CustomColors.mainColor(colorTheme))
+                                    ? WidgetStatePropertyAll(CustomThemes.mainColor(colorTheme))
                                     : null,
                           ),
                         );
@@ -197,7 +197,7 @@ class _ChatPageState extends State<ChatPage> {
                       style: ButtonStyle(
                         backgroundColor:
                             _hasMessage && selectedTagsNotifier.value > 0
-                                ? WidgetStatePropertyAll(CustomColors.mainColor(colorTheme))
+                                ? WidgetStatePropertyAll(CustomThemes.mainColor(colorTheme))
                                 : null,
                       ),
                     ),

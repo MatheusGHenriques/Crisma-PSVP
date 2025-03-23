@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '/data/custom_colors.dart';
+import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 import '/main.dart';
 
@@ -120,9 +120,9 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
         }
       },
       style: OutlinedButton.styleFrom(
-        foregroundColor: active ? Colors.white : CustomColors.mainColor(colorTheme),
-        backgroundColor: active ? CustomColors.mainColor(colorTheme) : null,
-        side: BorderSide(color: CustomColors.mainColor(colorTheme), width: 2.0),
+        foregroundColor: active ? Colors.white : CustomThemes.mainColor(colorTheme),
+        backgroundColor: active ? CustomThemes.mainColor(colorTheme) : null,
+        side: BorderSide(color: CustomThemes.mainColor(colorTheme), width: 2.0),
       ),
       child: Text(widget.text),
     );

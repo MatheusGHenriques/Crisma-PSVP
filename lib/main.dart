@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-import 'data/custom_colors.dart';
+import 'data/custom_themes.dart';
 import 'hive/hive_adapters.dart';
 import 'views/pages/login_page.dart';
 import 'views/widget_tree.dart';
@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> {
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(
-                  seedColor: CustomColors.mainColor(colorTheme),
+                  seedColor: CustomThemes.mainColor(colorTheme),
                   brightness: darkMode ? Brightness.dark : Brightness.light,
                 ),
               ),
@@ -87,6 +87,6 @@ class _MyAppState extends State<MyApp> {
             );
           },
         )
-        : ColoredBox(color: CustomColors.mainColor(colorTheme));
+        : ColoredBox(color: CustomThemes.mainColor(colorTheme));
   }
 }

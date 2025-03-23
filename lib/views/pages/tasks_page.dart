@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-import '/data/custom_colors.dart';
+import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 import '/main.dart';
 import '/views/widgets/create_new_task_widget.dart';
@@ -99,7 +99,7 @@ class _TasksPageState extends State<TasksPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
                   child: FloatingActionButton(
-                    backgroundColor: CustomColors.mainColor(colorTheme),
+                    backgroundColor: CustomThemes.mainColor(colorTheme),
                     onPressed: () {
                       showDialog(
                         context: context,

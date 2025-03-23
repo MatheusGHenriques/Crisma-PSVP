@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:path_provider/path_provider.dart';
-import '/data/custom_colors.dart';
+import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 import '/data/pdf.dart';
 import '/main.dart';
@@ -143,7 +143,7 @@ class _SchedulePageState extends State<SchedulePage> {
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: FloatingActionButton(
-                  backgroundColor: CustomColors.mainColor(colorTheme),
+                  backgroundColor: CustomThemes.mainColor(colorTheme),
                   onPressed: _checkToUpdatePdf,
                   child: const Icon(Icons.upload_rounded),
                 ),

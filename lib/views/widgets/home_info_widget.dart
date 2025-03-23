@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/data/custom_colors.dart';
+import '/data/custom_themes.dart';
 import '/main.dart';
 import '/data/notifiers.dart';
 
@@ -22,8 +22,8 @@ class HomeInfoWidget extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(25)),
             color:
                 isDarkMode
-                    ? CustomColors.darkBackgroundColor(colorTheme)
-                    : CustomColors.lightBackgroundColor(colorTheme),
+                    ? CustomThemes.darkBackgroundColor(colorTheme)
+                    : CustomThemes.lightBackgroundColor(colorTheme),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -31,7 +31,7 @@ class HomeInfoWidget extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(color: CustomColors.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
+                style: TextStyle(color: CustomThemes.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -43,7 +43,7 @@ class HomeInfoWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: CustomColors.secondaryDarkColor(colorTheme),
+                      color: CustomThemes.secondaryDarkColor(colorTheme),
                     ),
                   ),
                 ],

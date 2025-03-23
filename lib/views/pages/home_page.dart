@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '/data/custom_colors.dart';
+import 'package:lottie/lottie.dart';
+import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 import '/main.dart';
 import '/networking/tcp_networking.dart';
@@ -27,12 +28,15 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: 10,
                 children: [
+                  Lottie.asset(
+                    CustomThemes.lottie(colorTheme),
+                    width: MediaQuery.of(context).size.width / 2,
+                  ),
                   ValueListenableBuilder(
                     valueListenable: isDarkModeNotifier,
                     builder: (context, darkMode, child) {
                       return Image.asset(
-                        CustomColors.image(colorTheme, darkMode),
-                        height: MediaQuery.of(context).size.height / 3,
+                        CustomThemes.image(colorTheme, darkMode),
                         width: MediaQuery.of(context).size.width / 2,
                       );
                     },
