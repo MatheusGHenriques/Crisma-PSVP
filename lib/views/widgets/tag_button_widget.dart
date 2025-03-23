@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:crisma/data/custom_colors.dart';
+import 'package:crisma/main.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/notifiers.dart';
@@ -29,13 +31,13 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
     'Mulheres': 'santaMaria',
   };
 
-  Future<bool> checkGroupPassword() async{
+  Future<bool> checkGroupPassword() async {
     TextEditingController controller = TextEditingController();
     ValueNotifier<bool> buttonEnabledNotifier = ValueNotifier(false);
     Completer<bool> completer = Completer<bool>();
     controller.addListener(() {
-      if(controller.text.isNotEmpty){
-          buttonEnabledNotifier.value = true;
+      if (controller.text.isNotEmpty) {
+        buttonEnabledNotifier.value = true;
       }
     });
     showDialog(
@@ -52,17 +54,26 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
                     style: TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  TextField(controller: controller, textAlign: TextAlign.center, maxLength: 20, obscureText: true,),
-                  ValueListenableBuilder(valueListenable: buttonEnabledNotifier, builder: (context, buttonEnabled, child) {
-                    return FilledButton(onPressed: buttonEnabled ? () {
-                      if (controller.text == groupPasswords[widget.text]){
-                        completer.complete(true);
-                      }else{
-                        completer.complete(false);
-                      }
-                      Navigator.pop(context);
-                    } : null, child: Text('Entrar'));
-                  },),
+                  TextField(controller: controller, textAlign: TextAlign.center, maxLength: 20, obscureText: true),
+                  ValueListenableBuilder(
+                    valueListenable: buttonEnabledNotifier,
+                    builder: (context, buttonEnabled, child) {
+                      return FilledButton(
+                        onPressed:
+                            buttonEnabled
+                                ? () {
+                                  if (controller.text == groupPasswords[widget.text]) {
+                                    completer.complete(true);
+                                  } else {
+                                    completer.complete(false);
+                                  }
+                                  Navigator.pop(context);
+                                }
+                                : null,
+                        child: Text('Entrar'),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -73,8 +84,9 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
     return completer.future;
   }
 
-  bool _oneGenderSelected(){
-    return (widget.text == 'Homens' && widget.tagMap['Mulheres']!) || (widget.text == 'Mulheres' && widget.tagMap['Homens']!);
+  bool _oneGenderSelected() {
+    return (widget.text == 'Homens' && widget.tagMap['Mulheres']!) ||
+        (widget.text == 'Mulheres' && widget.tagMap['Homens']!);
   }
 
   @override
@@ -90,7 +102,7 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
               }
             }
           }
-          if(widget.login! && !active && _oneGenderSelected()){
+          if (widget.login! && !active && _oneGenderSelected()) {
             return;
           }
           if (widget.login! && !active && !await checkGroupPassword()) {
@@ -100,7 +112,7 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
             active = !active;
           });
           widget.tagMap[widget.text] = active;
-          selectedTagsNotifier.value--;
+          selectedTagsNotifier.value = 0;
           for (String tag in widget.tagMap.keys) {
             if (widget.tagMap[tag] == true) {
               selectedTagsNotifier.value++;
@@ -110,9 +122,9 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
         }
       },
       style: OutlinedButton.styleFrom(
-        foregroundColor: active ? Colors.white : Colors.redAccent,
-        backgroundColor: active ? Colors.redAccent : null,
-        side: BorderSide(color: Colors.redAccent, width: 2.0),
+        foregroundColor: active ? Colors.white : CustomColors.mainColor(colorTheme),
+        backgroundColor: active ? CustomColors.mainColor(colorTheme) : null,
+        side: BorderSide(color: CustomColors.mainColor(colorTheme), width: 2.0),
       ),
       child: Text(widget.text),
     );

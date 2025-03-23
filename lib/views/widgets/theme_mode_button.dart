@@ -15,16 +15,14 @@ class _ThemeModeButtonState extends State<ThemeModeButton> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: () async{
+      onPressed: () async {
         isDarkModeNotifier.value = !isDarkModeNotifier.value;
-        await _homeBox.put("themeModeKey", isDarkModeNotifier.value);
+        await _homeBox.put("themeMode", isDarkModeNotifier.value);
       },
       icon: ValueListenableBuilder(
         valueListenable: isDarkModeNotifier,
         builder: (context, darkMode, child) {
-          return Icon(
-            darkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          );
+          return Icon(darkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded);
         },
       ),
     );

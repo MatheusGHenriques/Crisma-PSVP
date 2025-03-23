@@ -20,14 +20,8 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
           destinations: [
             NavigationDestination(icon: Icon(Icons.home_rounded), label: ""),
             NavigationDestination(icon: Icon(Icons.chat_rounded), label: ""),
-            NavigationDestination(
-              icon: Icon(Icons.checklist_rtl_rounded),
-              label: "",
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.schedule_rounded),
-              label: "",
-            ),
+            NavigationDestination(icon: Icon(Icons.checklist_rtl_rounded), label: ""),
+            NavigationDestination(icon: Icon(Icons.schedule_rounded), label: ""),
           ],
           onDestinationSelected: (int value) {
             selectedPageNotifier.value = value;

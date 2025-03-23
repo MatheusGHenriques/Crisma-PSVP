@@ -15,8 +15,8 @@ class Task extends HiveObject {
     required this.description,
     required this.tags,
     DateTime? time,
-  })  : persons = persons ?? {},
-        time = (time ?? DateTime.now()).copyWith(microsecond: 0);
+  }) : persons = persons ?? {},
+       time = (time ?? DateTime.now()).copyWith(microsecond: 0);
 
   Map<String, dynamic> toJson() {
     return {
@@ -45,13 +45,11 @@ class Task extends HiveObject {
     if (identical(this, other)) return true;
     if (other is! Task) return false;
 
-    return description == other.description &&
-        sender == other.sender &&
-        time == other.time;
+    return description == other.description && sender == other.sender && time == other.time;
   }
 
   @override
-  int get hashCode{
+  int get hashCode {
     return description.hashCode ^ sender.hashCode ^ time.hashCode;
   }
 }

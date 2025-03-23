@@ -13,9 +13,7 @@ class MessageAdapter extends TypeAdapter<Message> {
   @override
   Message read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
     return Message(
       tags: (fields[0] as Map).cast<String, bool>(),
       sender: fields[1] as String,
@@ -43,10 +41,7 @@ class MessageAdapter extends TypeAdapter<Message> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is MessageAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      identical(this, other) || other is MessageAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class TaskAdapter extends TypeAdapter<Task> {
@@ -56,9 +51,7 @@ class TaskAdapter extends TypeAdapter<Task> {
   @override
   Task read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
     return Task(
       sender: fields[0] as String,
       numberOfPersons: (fields[1] as num).toInt(),
@@ -92,10 +85,7 @@ class TaskAdapter extends TypeAdapter<Task> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is TaskAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      identical(this, other) || other is TaskAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }
 
 class PdfAdapter extends TypeAdapter<Pdf> {
@@ -105,9 +95,7 @@ class PdfAdapter extends TypeAdapter<Pdf> {
   @override
   Pdf read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
     return Pdf(base64String: fields[0] as String, time: fields[1] as DateTime?);
   }
 
@@ -126,8 +114,5 @@ class PdfAdapter extends TypeAdapter<Pdf> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PdfAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      identical(this, other) || other is PdfAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

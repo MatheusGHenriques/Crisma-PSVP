@@ -1,3 +1,5 @@
+import 'package:crisma/data/custom_colors.dart';
+import 'package:crisma/main.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/notifiers.dart';
@@ -94,10 +96,10 @@ class _TaskWidgetState extends State<TaskWidget> {
             borderRadius: BorderRadius.all(Radius.circular(25)),
             color:
                 widget.task.sender == userName
-                    ? Colors.red[300]
+                    ? CustomColors.secondaryLightColor(colorTheme)
                     : isDarkMode
-                    ? Color.alphaBlend(Colors.red.withAlpha(30), Colors.black38)
-                    : Color.alphaBlend(Colors.red.withAlpha(50), Colors.white),
+                    ? CustomColors.darkBackgroundColor(colorTheme)
+                    : CustomColors.lightBackgroundColor(colorTheme),
           ),
           child: Row(
             spacing: 20,
@@ -110,12 +112,12 @@ class _TaskWidgetState extends State<TaskWidget> {
                     widget.task.sender != userName
                         ? Text(
                           widget.task.sender,
-                          style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 14),
+                          style: TextStyle(color: CustomColors.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
                         )
                         : const SizedBox(),
                     Text(
                       _getTags(),
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red[900]),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: CustomColors.secondaryDarkColor(colorTheme)),
                     ),
                     Text(
                       widget.task.description,

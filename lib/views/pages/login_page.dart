@@ -1,4 +1,6 @@
+import 'package:crisma/data/custom_colors.dart';
 import 'package:crisma/data/notifiers.dart';
+import 'package:crisma/main.dart';
 import 'package:crisma/views/widget_tree.dart';
 import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:crisma/views/widgets/theme_mode_button.dart';
@@ -45,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
   }
 
@@ -68,53 +70,54 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(actions: [ThemeModeButton()]),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 20.0,
-            children: [
-              ValueListenableBuilder(
-                valueListenable: isDarkModeNotifier,
-                builder: (context, darkMode, child) {
-                  return Image.asset(
-                    darkMode ? 'assets/images/compact_dark_logo.png' : 'assets/images/compact_light_logo.png',
-                    height: MediaQuery.of(context).size.height/3,
-                    width: MediaQuery.of(context).size.width/2,
-                  );
-                },
-              ),
-              TextField(
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(hintText: "Digite seu nome aqui"),
-                controller: _nameController,
-              ),
-              Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
-              TagSelectionWidget(tags: loginTags, login: true,),
-              ValueListenableBuilder(valueListenable: selectedTagsNotifier, builder: (context, selectedTagsNumber, child) {
-                return  FilledButton(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 20.0,
+          children: [
+            ValueListenableBuilder(
+              valueListenable: isDarkModeNotifier,
+              builder: (context, darkMode, child) {
+                return Image.asset(
+                  CustomColors.image(colorTheme, darkMode),
+                  height: MediaQuery.of(context).size.height / 3,
+                  width: MediaQuery.of(context).size.width / 2,
+                );
+              },
+            ),
+            TextField(
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(hintText: "Digite seu nome aqui"),
+              controller: _nameController,
+            ),
+            Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
+            TagSelectionWidget(tags: loginTags, login: true),
+            ValueListenableBuilder(
+              valueListenable: selectedTagsNotifier,
+              builder: (context, selectedTagsNumber, child) {
+                return FilledButton(
                   onPressed:
-                  _hasName && (loginTags['Homens']! || loginTags['Mulheres']!)
-                      ? () {
-                    pressedContinueButton();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return WidgetTree();
-                        },
-                      ),
-                    );
-                  }
-                      : null,
+                      _hasName && (loginTags['Homens']! || loginTags['Mulheres']!)
+                          ? () {
+                            pressedContinueButton();
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return WidgetTree();
+                                },
+                              ),
+                            );
+                          }
+                          : null,
                   child: Text("Continuar"),
                 );
-              },),
-              SizedBox(
-                height: 20,
-              )
-            ],
-          ),
+              },
+            ),
+            SizedBox(height: 20),
+          ],
         ),
+      ),
     );
   }
 }

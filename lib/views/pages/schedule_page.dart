@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crisma/data/custom_colors.dart';
 import 'package:crisma/data/notifiers.dart';
 import 'package:crisma/data/pdf.dart';
+import 'package:crisma/main.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
@@ -32,14 +34,14 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Future<void> _pickAndStorePDF() async {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
-      if (result != null) {
-        File file = File(result.files.single.path!);
-        List<int> fileBytes = await file.readAsBytes();
-        String base64String = base64Encode(fileBytes);
-        await _pdfBox.put("pdf", Pdf(base64String: base64String));
-        widget.onSendPdf(_pdfBox.values.single);
-      }
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      List<int> fileBytes = await file.readAsBytes();
+      String base64String = base64Encode(fileBytes);
+      await _pdfBox.put("pdf", Pdf(base64String: base64String));
+      widget.onSendPdf(_pdfBox.values.single);
+    }
   }
 
   void _checkToUpdatePdf() {
@@ -66,7 +68,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     style: TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  TextField(controller: controller, textAlign: TextAlign.center, maxLength: 13,),
+                  TextField(controller: controller, textAlign: TextAlign.center, maxLength: 13),
                   ValueListenableBuilder(
                     valueListenable: continueButtonEnabledNotifier,
                     builder: (context, continueButtonEnabled, child) {
@@ -144,7 +146,7 @@ class _SchedulePageState extends State<SchedulePage> {
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: FloatingActionButton(
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: CustomColors.mainColor(colorTheme),
                   onPressed: _checkToUpdatePdf,
                   child: Icon(Icons.upload_rounded),
                 ),

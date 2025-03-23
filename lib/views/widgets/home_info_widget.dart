@@ -1,3 +1,5 @@
+import 'package:crisma/data/custom_colors.dart';
+import 'package:crisma/main.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/notifiers.dart';
@@ -6,6 +8,7 @@ class HomeInfoWidget extends StatefulWidget {
   final String title;
   final String description;
   final IconData icon;
+
   const HomeInfoWidget({super.key, required this.title, required this.description, required this.icon});
 
   @override
@@ -15,16 +18,18 @@ class HomeInfoWidget extends StatefulWidget {
 class _HomeInfoWidgetState extends State<HomeInfoWidget> {
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(valueListenable: isDarkModeNotifier, builder: (context, value, child) {
-      return Container(
+    return ValueListenableBuilder(
+      valueListenable: isDarkModeNotifier,
+      builder: (context, isDarkMode, child) {
+        return Container(
           padding: const EdgeInsets.all(12),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width/2.5),
+          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 2.5),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(25)),
             color:
-            isDarkModeNotifier.value
-                ? Color.alphaBlend(Colors.red.withAlpha(30), Colors.black38)
-                : Color.alphaBlend(Colors.red.withAlpha(50), Colors.white),
+                isDarkMode
+                    ? CustomColors.darkBackgroundColor(colorTheme)
+                    : CustomColors.lightBackgroundColor(colorTheme),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -32,11 +37,7 @@ class _HomeInfoWidgetState extends State<HomeInfoWidget> {
             children: [
               Text(
                 widget.title,
-                style: const TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: CustomColors.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -45,13 +46,14 @@ class _HomeInfoWidgetState extends State<HomeInfoWidget> {
                   Icon(widget.icon),
                   Text(
                     widget.description,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red[900]),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: CustomColors.secondaryDarkColor(colorTheme)),
                   ),
                 ],
               ),
             ],
           ),
-      );
-    },);
+        );
+      },
+    );
   }
 }

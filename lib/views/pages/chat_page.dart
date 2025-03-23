@@ -1,5 +1,7 @@
+import 'package:crisma/data/custom_colors.dart';
 import 'package:crisma/data/message.dart';
 import 'package:crisma/data/notifiers.dart';
+import 'package:crisma/main.dart';
 import 'package:crisma/views/widgets/message_widget.dart';
 import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:flutter/material.dart';
@@ -100,23 +102,29 @@ class _ChatPageState extends State<ChatPage> {
                           return !ChatPage.userHasMessageTags(element);
                         });
                         int newMessagesIndicatorPosition = messages.length - unreadMessagesNotifier.value;
-                        return unreadMessagesNotifier.value > 0? Column(
-                          spacing: 5,
-                          children: List.generate(messages.length+1, (index) {
-                            return newMessagesIndicatorPosition == index? Row(
-                              children: [
-                                Expanded(child: Divider(thickness: 2,)),
-                                Text(" Novas Mensagens "),
-                                Expanded(child: Divider(thickness: 2,)),
-                              ],
-                            ) : newMessagesIndicatorPosition < index? MessageWidget(message: messages.elementAt(index-1)) : MessageWidget(message: messages.elementAt(index));
-                          }),
-                        ) : Column(
-                          spacing: 5,
-                          children: List.generate(messages.length, (index) {
-                            return MessageWidget(message: messages.elementAt(index));
-                          }),
-                        );
+                        return unreadMessagesNotifier.value > 0
+                            ? Column(
+                              spacing: 5,
+                              children: List.generate(messages.length + 1, (index) {
+                                return newMessagesIndicatorPosition == index
+                                    ? Row(
+                                      children: [
+                                        Expanded(child: Divider(thickness: 2)),
+                                        Text(" Novas Mensagens "),
+                                        Expanded(child: Divider(thickness: 2)),
+                                      ],
+                                    )
+                                    : newMessagesIndicatorPosition < index
+                                    ? MessageWidget(message: messages.elementAt(index - 1))
+                                    : MessageWidget(message: messages.elementAt(index));
+                              }),
+                            )
+                            : Column(
+                              spacing: 5,
+                              children: List.generate(messages.length, (index) {
+                                return MessageWidget(message: messages.elementAt(index));
+                              }),
+                            );
                       },
                     ),
                   ),
@@ -145,7 +153,10 @@ class _ChatPageState extends State<ChatPage> {
                           },
                           icon: const Icon(Icons.tag_rounded),
                           style: ButtonStyle(
-                            backgroundColor: selectedTagsNumber > 0 ? const WidgetStatePropertyAll(Colors.redAccent) : null,
+                            backgroundColor:
+                                selectedTagsNumber > 0
+                                    ? WidgetStatePropertyAll(CustomColors.mainColor(colorTheme))
+                                    : null,
                           ),
                         );
                       },
@@ -186,7 +197,7 @@ class _ChatPageState extends State<ChatPage> {
                       style: ButtonStyle(
                         backgroundColor:
                             _hasMessage && selectedTagsNotifier.value > 0
-                                ? const WidgetStatePropertyAll(Colors.redAccent)
+                                ? WidgetStatePropertyAll(CustomColors.mainColor(colorTheme))
                                 : null,
                       ),
                     ),

@@ -7,6 +7,7 @@ import 'package:hive_ce/hive.dart';
 
 class CreateNewTaskWidget extends StatefulWidget {
   final Function(Task) onSendTask;
+
   const CreateNewTaskWidget({super.key, required this.onSendTask});
 
   @override
@@ -33,11 +34,16 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
 
   void _createNewTask() {
     final newTags = Map<String, bool>.from(_newTaskTags);
-    Task taskToSend = Task(sender: userName, numberOfPersons: _numberOfPersons, description: _taskDescriptionController.text, tags: newTags);
+    Task taskToSend = Task(
+      sender: userName,
+      numberOfPersons: _numberOfPersons,
+      description: _taskDescriptionController.text,
+      tags: newTags,
+    );
     widget.onSendTask(taskToSend);
   }
 
-  void initController(){
+  void initController() {
     _taskDescriptionController.addListener(() {
       setState(() {
         _hasDescription = _taskDescriptionController.text.isNotEmpty;
@@ -110,15 +116,21 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
               SizedBox(height: 5),
               Text("Quem pode concluir essa tarefa?"),
               TagSelectionWidget(tags: _newTaskTags),
-              ValueListenableBuilder(valueListenable: selectedTagsNotifier, builder: (context, selectedTagsNumber, child) {
-                return FilledButton(
-                  onPressed: _hasDescription && selectedTagsNumber > 0? () {
-                      _createNewTask();
-                      Navigator.pop(context);
-                  } : null,
-                  child: Text("Criar Tarefa"),
-                );
-              },)
+              ValueListenableBuilder(
+                valueListenable: selectedTagsNotifier,
+                builder: (context, selectedTagsNumber, child) {
+                  return FilledButton(
+                    onPressed:
+                        _hasDescription && selectedTagsNumber > 0
+                            ? () {
+                              _createNewTask();
+                              Navigator.pop(context);
+                            }
+                            : null,
+                    child: Text("Criar Tarefa"),
+                  );
+                },
+              ),
             ],
           ),
         ),

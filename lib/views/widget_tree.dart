@@ -1,3 +1,4 @@
+import 'package:crisma/main.dart';
 import 'package:crisma/views/pages/chat_page.dart';
 import 'package:crisma/views/pages/custom_page.dart';
 import 'package:crisma/views/pages/home_page.dart';
@@ -6,6 +7,7 @@ import 'package:crisma/views/pages/schedule_page.dart';
 import 'package:crisma/views/pages/tasks_page.dart';
 import 'package:crisma/views/widgets/navigation_bar_widget.dart';
 import 'package:crisma/views/widgets/theme_mode_button.dart';
+import 'package:hive_ce/hive.dart';
 
 import '../data/message.dart';
 import '../data/notifiers.dart';
@@ -47,12 +49,39 @@ class _WidgetTreeState extends State<WidgetTree> {
     _tcpNetworking.sendMessage(messageToSend);
   }
 
-  void tcpSendTask(Task taskToSend){
+  void tcpSendTask(Task taskToSend) {
     _tcpNetworking.sendTask(taskToSend);
   }
 
-  void tcpSendPdf(Pdf pdfToSend){
+  void tcpSendPdf(Pdf pdfToSend) {
     _tcpNetworking.sendPdf(pdfToSend);
+  }
+
+  void _switchTheme() {
+    if (colorTheme == 2) {
+      Hive.box('homeBox').put('colorTheme', 0);
+    } else {
+      Hive.box('homeBox').put('colorTheme', colorTheme + 1);
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              alignment: WrapAlignment.center,
+              children: [
+                Text('Tema alterado!', style: TextStyle(fontSize: 14)),
+                Text('Reinicie o App para aplicar!', style: TextStyle(fontSize: 14)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -61,17 +90,7 @@ class _WidgetTreeState extends State<WidgetTree> {
       appBar: AppBar(
         title: Text("Crisma PSVP"),
         centerTitle: true,
-        leading: ValueListenableBuilder(
-          valueListenable: connectedPeersNotifier,
-          builder: (context, connectedPeers, child) {
-            return connectedPeers > 0
-                ? Icon(Icons.signal_wifi_4_bar_rounded)
-                : IconButton(
-                  onPressed: _tcpNetworking.sendUdpDiscoveryRequest,
-                  icon: Icon(Icons.signal_wifi_off_rounded),
-                );
-          },
-        ),
+        leading: IconButton(onPressed: _switchTheme, icon: Icon(Icons.format_paint_rounded)),
         actions: [
           ThemeModeButton(),
           IconButton(
@@ -96,7 +115,12 @@ class _WidgetTreeState extends State<WidgetTree> {
       body: ValueListenableBuilder<int>(
         valueListenable: selectedPageNotifier,
         builder: (context, selectedPage, child) {
-          final pages = [HomePage(tcpNetworking: _tcpNetworking,), ChatPage(onSendMessage: tcpSendMessage), TasksPage(onSendTask: tcpSendTask), SchedulePage(onSendPdf: tcpSendPdf,)];
+          final pages = [
+            HomePage(tcpNetworking: _tcpNetworking),
+            ChatPage(onSendMessage: tcpSendMessage),
+            TasksPage(onSendTask: tcpSendTask),
+            SchedulePage(onSendPdf: tcpSendPdf),
+          ];
           final page = CustomPage(
             key: ValueKey(selectedPage),
             newIndex: selectedPage,

@@ -35,7 +35,7 @@ class PeerToPeerTcpNetworking {
     sendUdpDiscoveryRequest();
   }
 
-  void dispose(){
+  void dispose() {
     _serverSocket?.close();
     _serverSocket = null;
     _udpSocket?.close();
@@ -76,7 +76,6 @@ class PeerToPeerTcpNetworking {
           String peerIp = datagram.address.address;
           bool alreadyConnected = _peers.any((socket) => socket.remoteAddress.address == peerIp);
           if (!alreadyConnected) {
-
             connectToPeer(peerIp);
           }
         }
@@ -100,23 +99,18 @@ class PeerToPeerTcpNetworking {
   }
 
   void _sendSyncResponse(Socket socket) {
-    List<Map<String, dynamic>> messages = chatBox.values
-        .cast<Message>()
-        .map((message) => message.toJson())
-        .toList();
+    List<Map<String, dynamic>> messages = chatBox.values.cast<Message>().map((message) => message.toJson()).toList();
 
-    List<Map<String, dynamic>> tasks = taskBox.values
-        .cast<Task>()
-        .map((task) => task.toJson())
-        .toList();
+    List<Map<String, dynamic>> tasks = taskBox.values.cast<Task>().map((task) => task.toJson()).toList();
 
     Map<String, dynamic> pdf = pdfBox.get("pdf").toJson();
 
-    String jsonString = "${json.encode({
-      'type': 'sync',
-      'payload': {'messages': messages, 'tasks': tasks, 'pdf': pdf},
-      'sender': deviceName
-    })}\n";
+    String jsonString =
+        "${json.encode({
+          'type': 'sync',
+          'payload': {'messages': messages, 'tasks': tasks, 'pdf': pdf},
+          'sender': deviceName,
+        })}\n";
 
     socket.write(jsonString);
   }
@@ -132,7 +126,7 @@ class PeerToPeerTcpNetworking {
       });
 
       socket.listen(
-            (data) => _handleIncomingData(socket, data),
+        (data) => _handleIncomingData(socket, data),
         onError: (error) {
           _removePeer(socket);
           socket.close();
@@ -156,7 +150,7 @@ class PeerToPeerTcpNetworking {
     });
 
     socket.listen(
-          (data) => _handleIncomingData(socket, data),
+      (data) => _handleIncomingData(socket, data),
       onError: (error) {
         _removePeer(socket);
         socket.close();
@@ -186,7 +180,7 @@ class PeerToPeerTcpNetworking {
         } else if (type == 'task') {
           Task task = Task.fromJson(jsonData['payload']);
           _addTaskToTaskBox(task);
-        } else if(type == 'pdf'){
+        } else if (type == 'pdf') {
           Pdf pdf = Pdf.fromJson(jsonData['payload']);
           _addPdfToPdfBox(pdf);
         } else if (type == 'sync') {
@@ -205,7 +199,7 @@ class PeerToPeerTcpNetworking {
               _addTaskToTaskBox(task);
             }
           }
-          if(payload.containsKey('pdf')){
+          if (payload.containsKey('pdf')) {
             Pdf pdf = Pdf.fromJson(payload['pdf']);
             _addPdfToPdfBox(pdf);
           }
@@ -285,9 +279,9 @@ class PeerToPeerTcpNetworking {
     }
   }
 
-  void sendPdf(Pdf pdf){
+  void sendPdf(Pdf pdf) {
     String jsonString = "${json.encode({'type': 'pdf', 'payload': pdf.toJson()})}\n";
-    for(Socket peer in _peers){
+    for (Socket peer in _peers) {
       peer.write(jsonString);
     }
   }
@@ -301,7 +295,7 @@ class PeerToPeerTcpNetworking {
 
   void _addMessageToChatBox(Message message) async {
     if (!_chatBoxMessages.contains(message)) {
-      if(ChatPage.userHasMessageTags(message) && message.sender != userName){
+      if (ChatPage.userHasMessageTags(message) && message.sender != userName) {
         unreadMessagesNotifier.value++;
       }
       _chatBoxMessages.add(message);
@@ -312,9 +306,9 @@ class PeerToPeerTcpNetworking {
   void _addTaskToTaskBox(Task task) async {
     bool containsTask = false, addTask = false;
     for (Task boxTask in taskBox.values) {
-      if(task == boxTask){
+      if (task == boxTask) {
         containsTask = true;
-        if(task.numberOfPersons < boxTask.numberOfPersons || task.persons != boxTask.persons){
+        if (task.numberOfPersons < boxTask.numberOfPersons || task.persons != boxTask.persons) {
           addTask = true;
           await boxTask.delete();
         }
@@ -323,7 +317,7 @@ class PeerToPeerTcpNetworking {
     }
 
     if (addTask || !containsTask) {
-      if(TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0){
+      if (TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0) {
         newTasksNotifier.value++;
       }
       await taskBox.add(task);
@@ -332,7 +326,7 @@ class PeerToPeerTcpNetworking {
   }
 
   void _addPdfToPdfBox(Pdf pdf) async {
-    if(pdfBox.isEmpty || await pdfBox.get("pdf").time.isBefore(pdf.time)){
+    if (pdfBox.isEmpty || await pdfBox.get("pdf").time.isBefore(pdf.time)) {
       await pdfBox.put("pdf", pdf);
       updatedScheduleNotifier.value = true;
     }
