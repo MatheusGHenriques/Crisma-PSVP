@@ -1,9 +1,8 @@
-import 'package:crisma/data/notifiers.dart';
-import 'package:crisma/data/task.dart';
-import 'package:crisma/data/user_info.dart';
-import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_ce/hive.dart';
+import '/data/notifiers.dart';
+import '/data/task.dart';
+import '/data/user_info.dart';
+import 'tag_selection_widget.dart';
 
 class CreateNewTaskWidget extends StatefulWidget {
   final Function(Task) onSendTask;
@@ -16,7 +15,6 @@ class CreateNewTaskWidget extends StatefulWidget {
 
 class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
   late bool _hasDescription = false;
-  final Box taskBox = Hive.box("taskBox");
 
   final TextEditingController _taskDescriptionController = TextEditingController();
   int _numberOfPersons = 1;
@@ -68,18 +66,18 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Padding(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             spacing: 10,
             children: [
-              Text("Nova Tarefa", style: TextStyle(fontSize: 20)),
+              const Text("Nova Tarefa", style: TextStyle(fontSize: 20)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 10,
                 children: [
-                  Text("Nº de Pessoas:"),
+                  const Text("Nº de Pessoas:"),
                   IconButton(
                     onPressed: () {
                       if (_numberOfPersons > 1) {
@@ -88,7 +86,7 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
                         });
                       }
                     },
-                    icon: Icon(Icons.remove_rounded),
+                    icon: const Icon(Icons.remove_rounded),
                   ),
                   Text(_numberOfPersons.toString()),
                   IconButton(
@@ -99,7 +97,7 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
                         });
                       }
                     },
-                    icon: Icon(Icons.add_rounded),
+                    icon: const Icon(Icons.add_rounded),
                   ),
                 ],
               ),
@@ -113,8 +111,8 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                 ),
               ),
-              SizedBox(height: 5),
-              Text("Quem pode concluir essa tarefa?"),
+              const SizedBox(height: 5),
+              const Text("Quem pode concluir essa tarefa?"),
               TagSelectionWidget(tags: _newTaskTags),
               ValueListenableBuilder(
                 valueListenable: selectedTagsNotifier,
@@ -127,7 +125,7 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
                               Navigator.pop(context);
                             }
                             : null,
-                    child: Text("Criar Tarefa"),
+                    child: const Text("Criar Tarefa"),
                   );
                 },
               ),

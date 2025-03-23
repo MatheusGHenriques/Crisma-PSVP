@@ -1,10 +1,9 @@
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/main.dart';
 import 'package:flutter/material.dart';
-
-import '../../data/notifiers.dart';
-import '../../data/task.dart';
-import '../../data/user_info.dart';
+import '/data/custom_colors.dart';
+import '/main.dart';
+import '/data/notifiers.dart';
+import '/data/task.dart';
+import '/data/user_info.dart';
 
 class TaskWidget extends StatefulWidget {
   final Task task;
@@ -35,7 +34,10 @@ class _TaskWidgetState extends State<TaskWidget> {
         persons.add(Text(", "));
       }
       if (widget.task.persons[person]!) {
-        text = Text(person, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold));
+        text = Text(
+          person,
+          style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.lineThrough, decorationThickness: 2),
+        );
       } else {
         text = Text(person, style: TextStyle(fontWeight: FontWeight.bold));
       }
@@ -54,11 +56,11 @@ class _TaskWidgetState extends State<TaskWidget> {
     return true;
   }
 
-  void _sendTask() {
-    widget.onSendTask(widget.task);
-    setState(() async {
-      await widget.task.save();
+  void _sendTask() async {
+    setState(() {
+      widget.onSendTask(widget.task);
     });
+    await widget.task.save();
   }
 
   void _deleteTask() {
@@ -79,13 +81,6 @@ class _TaskWidgetState extends State<TaskWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if ((widget.task.persons[userName] != null && widget.task.persons[userName]! == true) ||
-        (widget.task.numberOfPersons == 0 &&
-            widget.task.sender != userName &&
-            !widget.task.persons.containsKey(userName))) {
-      return SizedBox();
-    }
-
     return ValueListenableBuilder(
       valueListenable: isDarkModeNotifier,
       builder: (context, isDarkMode, child) {
@@ -112,12 +107,20 @@ class _TaskWidgetState extends State<TaskWidget> {
                     widget.task.sender != userName
                         ? Text(
                           widget.task.sender,
-                          style: TextStyle(color: CustomColors.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
+                          style: TextStyle(
+                            color: CustomColors.mainColor(colorTheme),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         )
                         : const SizedBox(),
                     Text(
                       _getTags(),
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: CustomColors.secondaryDarkColor(colorTheme)),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: CustomColors.secondaryDarkColor(colorTheme),
+                      ),
                     ),
                     Text(
                       widget.task.description,
@@ -127,7 +130,7 @@ class _TaskWidgetState extends State<TaskWidget> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Row(children: [Icon(Icons.person_rounded), Text(widget.task.numberOfPersons.toString())]),
+                    Row(children: [const Icon(Icons.person_rounded), Text(widget.task.numberOfPersons.toString())]),
                     Row(children: _getPersons()),
                   ],
                 ),

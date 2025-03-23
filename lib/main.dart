@@ -1,26 +1,39 @@
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/hive/hive_adapters.dart';
-import 'package:crisma/views/pages/login_page.dart';
-import 'package:crisma/views/widget_tree.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-
+import 'data/custom_colors.dart';
+import 'hive/hive_adapters.dart';
+import 'views/pages/login_page.dart';
+import 'views/widget_tree.dart';
 import 'data/notifiers.dart';
 import 'data/user_info.dart';
 
-late int colorTheme;
+int colorTheme = 0;
+late Box chatBox;
+late Box taskBox;
+late Box pdfBox;
+late Box homeBox;
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  await initHive();
+  runApp(MyApp());
+}
+
+Future<void> initHive() async {
   await Hive.initFlutter();
+
   Hive.registerAdapter(MessageAdapter());
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(PdfAdapter());
+
   await Hive.openBox("chatBox");
   await Hive.openBox("taskBox");
   await Hive.openBox("pdfBox");
   await Hive.openBox("homeBox");
-  runApp(MyApp());
+
+  chatBox = Hive.box("chatBox");
+  taskBox = Hive.box("taskBox");
+  pdfBox = Hive.box("pdfBox");
+  homeBox = Hive.box("homeBox");
 }
 
 class MyApp extends StatefulWidget {
@@ -32,7 +45,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _loaded = false;
-  final Box _homeBox = Hive.box("homeBox");
 
   @override
   void initState() {
@@ -42,15 +54,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initThemeMode() async {
-    bool? darkMode = await _homeBox.get('themeMode');
+    colorTheme = await homeBox.get('colorTheme') ?? 0;
+    bool? darkMode = await homeBox.get('themeMode');
     isDarkModeNotifier.value = darkMode ?? false;
-    colorTheme = await _homeBox.get('colorTheme') ?? 0;
   }
 
   void getUser() async {
-    userName = await _homeBox.get("userName") ?? "";
+    userName = await homeBox.get("userName") ?? "";
     for (String tag in userTags.keys) {
-      userTags[tag] = await _homeBox.get(tag) ?? false;
+      userTags[tag] = await homeBox.get(tag) ?? false;
     }
     setState(() {
       _loaded = true;
@@ -59,29 +71,22 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: Duration(milliseconds: 300),
-      transitionBuilder: (child, animation) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-      child:
-          _loaded
-              ? ValueListenableBuilder(
-                valueListenable: isDarkModeNotifier,
-                builder: (context, darkMode, child) {
-                  return MaterialApp(
-                    debugShowCheckedModeBanner: false,
-                    theme: ThemeData(
-                      colorScheme: ColorScheme.fromSeed(
-                        seedColor: CustomColors.mainColor(colorTheme),
-                        brightness: darkMode ? Brightness.dark : Brightness.light,
-                      ),
-                    ),
-                    home: userName == "" ? LoginPage() : WidgetTree(),
-                  );
-                },
-              )
-              : ColoredBox(color: CustomColors.mainColor(colorTheme)),
-    );
+    return _loaded
+        ? ValueListenableBuilder(
+          valueListenable: isDarkModeNotifier,
+          builder: (context, darkMode, child) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: CustomColors.mainColor(colorTheme),
+                  brightness: darkMode ? Brightness.dark : Brightness.light,
+                ),
+              ),
+              home: userName == "" ? LoginPage() : WidgetTree(),
+            );
+          },
+        )
+        : ColoredBox(color: CustomColors.mainColor(colorTheme));
   }
 }

@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/data/notifiers.dart';
-import 'package:crisma/data/pdf.dart';
-import 'package:crisma/main.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:path_provider/path_provider.dart';
+import '/data/custom_colors.dart';
+import '/data/notifiers.dart';
+import '/data/pdf.dart';
+import '/main.dart';
 
 class SchedulePage extends StatefulWidget {
   final Function(Pdf) onSendPdf;
@@ -21,11 +20,9 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
-  final Box _pdfBox = Hive.box("pdfBox");
-
   Future<String> _getPdf() async {
     Directory dir = await getApplicationDocumentsDirectory();
-    Pdf pdf = _pdfBox.get("pdf");
+    Pdf pdf = pdfBox.get("pdf");
     List<int> fileBytes = base64Decode(pdf.base64String);
     String pdfPath = "${dir.path}/cronograma_retiro_app.pdf";
     File pdfFile = File(pdfPath);
@@ -39,8 +36,8 @@ class _SchedulePageState extends State<SchedulePage> {
       File file = File(result.files.single.path!);
       List<int> fileBytes = await file.readAsBytes();
       String base64String = base64Encode(fileBytes);
-      await _pdfBox.put("pdf", Pdf(base64String: base64String));
-      widget.onSendPdf(_pdfBox.values.single);
+      await pdfBox.put("pdf", Pdf(base64String: base64String));
+      widget.onSendPdf(pdfBox.values.single);
     }
   }
 
@@ -57,13 +54,13 @@ class _SchedulePageState extends State<SchedulePage> {
       builder: (context) {
         return Dialog(
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: 5,
                 children: [
-                  Text(
+                  const Text(
                     'Digite "Atualizar PDF" abaixo caso queira atualizar o Cronograma. Se nao, clique fora dessa caixa.',
                     style: TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
@@ -80,7 +77,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                   _pickAndStorePDF();
                                 }
                                 : null,
-                        child: Text("Atualizar Cronograma"),
+                        child: const Text("Atualizar Cronograma"),
                       );
                     },
                   ),
@@ -110,7 +107,7 @@ class _SchedulePageState extends State<SchedulePage> {
             alignment: Alignment.bottomRight,
             children: [
               ValueListenableBuilder(
-                valueListenable: _pdfBox.listenable(),
+                valueListenable: pdfBox.listenable(),
                 builder: (context, box, child) {
                   return FutureBuilder<String?>(
                     future: _getPdf(),
@@ -136,7 +133,7 @@ class _SchedulePageState extends State<SchedulePage> {
                         return SizedBox(
                           height: constraints.maxHeight,
                           width: MediaQuery.of(context).size.width,
-                          child: Align(alignment: Alignment.center, child: Text("Nenhum PDF por enquanto")),
+                          child: Align(alignment: Alignment.center, child: const Text("Nenhum PDF por enquanto")),
                         );
                       }
                     },
@@ -148,7 +145,7 @@ class _SchedulePageState extends State<SchedulePage> {
                 child: FloatingActionButton(
                   backgroundColor: CustomColors.mainColor(colorTheme),
                   onPressed: _checkToUpdatePdf,
-                  child: Icon(Icons.upload_rounded),
+                  child: const Icon(Icons.upload_rounded),
                 ),
               ),
             ],

@@ -1,10 +1,8 @@
 import 'dart:async';
-
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/main.dart';
 import 'package:flutter/material.dart';
-
-import '../../data/notifiers.dart';
+import '/data/custom_colors.dart';
+import '/data/notifiers.dart';
+import '/main.dart';
 
 class TagButtonWidget extends StatefulWidget {
   final String text;
@@ -20,7 +18,7 @@ class TagButtonWidget extends StatefulWidget {
 class _TagButtonWidgetState extends State<TagButtonWidget> {
   bool active = false;
 
-  Map<String, String> groupPasswords = {
+  static const Map<String, String> groupPasswords = {
     'Coordenação': 'saoPedro',
     'Música': 'santaCecilia',
     'Suporte': 'santoExpedido',
@@ -70,7 +68,7 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
                                   Navigator.pop(context);
                                 }
                                 : null,
-                        child: Text('Entrar'),
+                        child: const Text('Entrar'),
                       );
                     },
                   ),

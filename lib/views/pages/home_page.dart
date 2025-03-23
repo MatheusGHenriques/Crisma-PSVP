@@ -1,34 +1,21 @@
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/data/notifiers.dart';
-import 'package:crisma/main.dart';
-import 'package:crisma/networking/tcp_networking.dart';
-import 'package:crisma/views/widgets/home_info_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_ce/hive.dart';
-import 'package:hive_ce_flutter/adapters.dart';
+import '/data/custom_colors.dart';
+import '/data/notifiers.dart';
+import '/main.dart';
+import '/networking/tcp_networking.dart';
+import '/views/widgets/home_info_widget.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   final PeerToPeerTcpNetworking tcpNetworking;
 
   const HomePage({super.key, required this.tcpNetworking});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final Box homeBox = Hive.box("homeBox");
-
-  @override
-  void initState() {
+  Widget build(BuildContext context) {
     unreadMessagesNotifier.value = homeBox.get("unreadMessages") ?? 0;
     newTasksNotifier.value = homeBox.get("newTasks") ?? 0;
     updatedScheduleNotifier.value = homeBox.get("updatedSchedule") ?? false;
-    super.initState();
-  }
 
-  @override
-  Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Padding(
@@ -50,7 +37,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     spacing: 10,
@@ -75,13 +62,11 @@ class _HomePageState extends State<HomePage> {
                                                 spacing: 5,
                                                 crossAxisAlignment: WrapCrossAlignment.center,
                                                 alignment: WrapAlignment.center,
-                                                children: List.generate(widget.tcpNetworking.socketDeviceNames.length, (
+                                                children: List.generate(tcpNetworking.socketDeviceNames.length, (
                                                   index,
                                                 ) {
                                                   return HomeInfoWidget(
-                                                    title: widget.tcpNetworking.socketDeviceNames.values.elementAt(
-                                                      index,
-                                                    ),
+                                                    title: tcpNetworking.socketDeviceNames.values.elementAt(index),
                                                     description: "Conectado",
                                                     icon: Icons.check_circle_rounded,
                                                   );
@@ -92,7 +77,7 @@ class _HomePageState extends State<HomePage> {
                                         },
                                       );
                                     }
-                                    : widget.tcpNetworking.sendUdpDiscoveryRequest,
+                                    : tcpNetworking.sendUdpDiscoveryRequest,
                             child: HomeInfoWidget(
                               title: "Conexões",
                               description: connectedPeers.toString(),

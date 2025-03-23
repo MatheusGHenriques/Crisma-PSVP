@@ -1,10 +1,9 @@
-import 'package:crisma/data/message.dart';
-import 'package:crisma/data/user_info.dart';
-import 'package:crisma/main.dart';
 import 'package:flutter/material.dart';
-
-import '../../data/custom_colors.dart';
-import '../../data/notifiers.dart';
+import '/data/message.dart';
+import '/data/user_info.dart';
+import '/main.dart';
+import '/data/custom_colors.dart';
+import '/data/notifiers.dart';
 
 class MessageWidget extends StatelessWidget {
   final Message message;
@@ -40,23 +39,60 @@ class MessageWidget extends StatelessWidget {
                       ? CustomColors.darkBackgroundColor(colorTheme)
                       : CustomColors.lightBackgroundColor(colorTheme),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 5,
-              children: [
+            child:
                 message.sender != userName
-                    ? Text(
-                      message.sender,
-                      style: TextStyle(color: CustomColors.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
+                    ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 5,
+                      children: [
+                        Text(
+                          message.sender,
+                          style: TextStyle(
+                            color: CustomColors.mainColor(colorTheme),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          _getTags(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: CustomColors.secondaryDarkColor(colorTheme),
+                          ),
+                        ),
+                        Text(
+                          message.text,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDarkMode ? Colors.white : null,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     )
-                    : const SizedBox(),
-                Text(_getTags(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: CustomColors.secondaryDarkColor(colorTheme))),
-                Text(
-                  message.text,
-                  style: TextStyle(fontSize: 14, color: isDarkMode ? Colors.white : null, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+                    : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 5,
+                      children: [
+                        Text(
+                          _getTags(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: CustomColors.secondaryDarkColor(colorTheme),
+                          ),
+                        ),
+                        Text(
+                          message.text,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDarkMode ? Colors.white : null,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
           );
         },
       ),

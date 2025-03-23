@@ -1,12 +1,12 @@
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/data/message.dart';
-import 'package:crisma/data/notifiers.dart';
-import 'package:crisma/main.dart';
-import 'package:crisma/views/widgets/message_widget.dart';
-import 'package:crisma/views/widgets/tag_selection_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-import '../../data/user_info.dart';
+import '/data/custom_colors.dart';
+import '/data/message.dart';
+import '/data/notifiers.dart';
+import '/main.dart';
+import '/views/widgets/message_widget.dart';
+import '/views/widgets/tag_selection_widget.dart';
+import '/data/user_info.dart';
 
 class ChatPage extends StatefulWidget {
   final Function(Message) onSendMessage;
@@ -32,7 +32,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _sendMessageController = TextEditingController();
   String _stringTags = "";
-  late Map<String, bool> selectedTags = {
+  Map<String, bool> selectedTags = {
     "Geral": false,
     "Coordenação": false,
     "Música": false,
@@ -63,7 +63,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void sendButtonClicked() {
-    final newTags = Map<String, bool>.from(selectedTags);
+    Map<String, bool> newTags = Map<String, bool>.from(selectedTags);
     Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text);
     widget.onSendMessage(messageToSend);
     _sendMessageController.clear();
@@ -107,7 +107,7 @@ class _ChatPageState extends State<ChatPage> {
                               spacing: 5,
                               children: List.generate(messages.length + 1, (index) {
                                 return newMessagesIndicatorPosition == index
-                                    ? Row(
+                                    ? const Row(
                                       children: [
                                         Expanded(child: Divider(thickness: 2)),
                                         Text(" Novas Mensagens "),

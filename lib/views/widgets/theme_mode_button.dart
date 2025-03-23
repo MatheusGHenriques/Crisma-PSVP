@@ -1,23 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:hive_ce/hive.dart';
-import '../../data/notifiers.dart';
+import '/data/notifiers.dart';
+import '/main.dart';
 
-class ThemeModeButton extends StatefulWidget {
+class ThemeModeButton extends StatelessWidget {
   const ThemeModeButton({super.key});
-
-  @override
-  State<ThemeModeButton> createState() => _ThemeModeButtonState();
-}
-
-class _ThemeModeButtonState extends State<ThemeModeButton> {
-  final Box _homeBox = Hive.box("homeBox");
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () async {
         isDarkModeNotifier.value = !isDarkModeNotifier.value;
-        await _homeBox.put("themeMode", isDarkModeNotifier.value);
+        await homeBox.put("themeMode", isDarkModeNotifier.value);
       },
       icon: ValueListenableBuilder(
         valueListenable: isDarkModeNotifier,

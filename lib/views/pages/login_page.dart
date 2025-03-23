@@ -1,12 +1,12 @@
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/data/notifiers.dart';
-import 'package:crisma/main.dart';
-import 'package:crisma/views/widget_tree.dart';
-import 'package:crisma/views/widgets/tag_selection_widget.dart';
-import 'package:crisma/views/widgets/theme_mode_button.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_ce/hive.dart';
-import '../../data/user_info.dart';
+import '/data/custom_colors.dart';
+import '/data/notifiers.dart';
+import '/main.dart';
+import '/views/widget_tree.dart';
+import '/views/widgets/tag_selection_widget.dart';
+import '/views/widgets/theme_color_button.dart';
+import '/views/widgets/theme_mode_button.dart';
+import '/data/user_info.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,7 +17,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _nameController = TextEditingController();
-  final Box _homeBox = Hive.box("homeBox");
   bool _hasName = false;
 
   Map<String, bool> loginTags = {
@@ -43,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void resetUser() async {
-    await _homeBox.delete("userName");
+    await homeBox.delete("userName");
   }
 
   @override
@@ -58,18 +57,18 @@ class _LoginPageState extends State<LoginPage> {
       userTags[tag] = loginTags[tag]!;
     }
     userTags["Geral"] = true;
-    await _homeBox.put("userName", userName);
+    await homeBox.put("userName", userName);
     for (String tag in userTags.keys) {
-      await _homeBox.put(tag, userTags[tag]!);
+      await homeBox.put(tag, userTags[tag]!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(actions: [ThemeModeButton()]),
+      appBar: AppBar(leading: ThemeColorButton(context: context,) ,actions: [ThemeModeButton()]),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -85,12 +84,12 @@ class _LoginPageState extends State<LoginPage> {
                 );
               },
             ),
-            TextField(
+           TextField(
               textAlign: TextAlign.center,
               decoration: InputDecoration(hintText: "Digite seu nome aqui"),
               controller: _nameController,
             ),
-            Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
+            const Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
             TagSelectionWidget(tags: loginTags, login: true),
             ValueListenableBuilder(
               valueListenable: selectedTagsNotifier,
@@ -110,11 +109,11 @@ class _LoginPageState extends State<LoginPage> {
                             );
                           }
                           : null,
-                  child: Text("Continuar"),
+                  child: const Text("Continuar"),
                 );
               },
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),

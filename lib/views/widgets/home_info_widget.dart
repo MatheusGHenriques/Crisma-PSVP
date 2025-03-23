@@ -1,21 +1,15 @@
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/main.dart';
 import 'package:flutter/material.dart';
+import '/data/custom_colors.dart';
+import '/main.dart';
+import '/data/notifiers.dart';
 
-import '../../data/notifiers.dart';
-
-class HomeInfoWidget extends StatefulWidget {
+class HomeInfoWidget extends StatelessWidget {
   final String title;
   final String description;
   final IconData icon;
 
   const HomeInfoWidget({super.key, required this.title, required this.description, required this.icon});
 
-  @override
-  State<HomeInfoWidget> createState() => _HomeInfoWidgetState();
-}
-
-class _HomeInfoWidgetState extends State<HomeInfoWidget> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -36,17 +30,21 @@ class _HomeInfoWidgetState extends State<HomeInfoWidget> {
             spacing: 5,
             children: [
               Text(
-                widget.title,
+                title,
                 style: TextStyle(color: CustomColors.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 5,
                 children: [
-                  Icon(widget.icon),
+                  Icon(icon),
                   Text(
-                    widget.description,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: CustomColors.secondaryDarkColor(colorTheme)),
+                    description,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: CustomColors.secondaryDarkColor(colorTheme),
+                    ),
                   ),
                 ],
               ),

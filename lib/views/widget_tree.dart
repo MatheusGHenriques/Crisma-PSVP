@@ -1,21 +1,19 @@
-import 'package:crisma/main.dart';
-import 'package:crisma/views/pages/chat_page.dart';
-import 'package:crisma/views/pages/custom_page.dart';
-import 'package:crisma/views/pages/home_page.dart';
-import 'package:crisma/views/pages/login_page.dart';
-import 'package:crisma/views/pages/schedule_page.dart';
-import 'package:crisma/views/pages/tasks_page.dart';
-import 'package:crisma/views/widgets/navigation_bar_widget.dart';
-import 'package:crisma/views/widgets/theme_mode_button.dart';
-import 'package:hive_ce/hive.dart';
-
-import '../data/message.dart';
-import '../data/notifiers.dart';
-import '../data/pdf.dart';
-import '../data/task.dart';
-import '../data/user_info.dart';
-import '../networking/tcp_networking.dart';
 import 'package:flutter/material.dart';
+import '/views/pages/chat_page.dart';
+import '/views/pages/page_animation.dart';
+import '/views/pages/home_page.dart';
+import '/views/pages/login_page.dart';
+import '/views/pages/schedule_page.dart';
+import '/views/pages/tasks_page.dart';
+import '/views/widgets/navigation_bar_widget.dart';
+import '/views/widgets/theme_color_button.dart';
+import '/views/widgets/theme_mode_button.dart';
+import '/data/message.dart';
+import '/data/notifiers.dart';
+import '/data/pdf.dart';
+import '/data/task.dart';
+import '/data/user_info.dart';
+import '/networking/tcp_networking.dart';
 
 class WidgetTree extends StatefulWidget {
   const WidgetTree({super.key});
@@ -57,40 +55,13 @@ class _WidgetTreeState extends State<WidgetTree> {
     _tcpNetworking.sendPdf(pdfToSend);
   }
 
-  void _switchTheme() {
-    if (colorTheme == 2) {
-      Hive.box('homeBox').put('colorTheme', 0);
-    } else {
-      Hive.box('homeBox').put('colorTheme', colorTheme + 1);
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              alignment: WrapAlignment.center,
-              children: [
-                Text('Tema alterado!', style: TextStyle(fontSize: 14)),
-                Text('Reinicie o App para aplicar!', style: TextStyle(fontSize: 14)),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Crisma PSVP"),
+        title: const Text("Crisma PSVP"),
         centerTitle: true,
-        leading: IconButton(onPressed: _switchTheme, icon: Icon(Icons.format_paint_rounded)),
+        leading: ThemeColorButton(context: context),
         actions: [
           ThemeModeButton(),
           IconButton(
@@ -108,7 +79,7 @@ class _WidgetTreeState extends State<WidgetTree> {
                 ),
               );
             },
-            icon: Icon(Icons.logout_rounded),
+            icon: const Icon(Icons.logout_rounded),
           ),
         ],
       ),
@@ -121,7 +92,7 @@ class _WidgetTreeState extends State<WidgetTree> {
             TasksPage(onSendTask: tcpSendTask),
             SchedulePage(onSendPdf: tcpSendPdf),
           ];
-          final page = CustomPage(
+          final page = PageAnimation(
             key: ValueKey(selectedPage),
             newIndex: selectedPage,
             oldIndex: _previousPage,

@@ -1,13 +1,12 @@
-import 'package:crisma/data/custom_colors.dart';
-import 'package:crisma/data/notifiers.dart';
-import 'package:crisma/main.dart';
-import 'package:crisma/views/widgets/create_new_task_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-
-import '../../data/task.dart';
-import '../../data/user_info.dart';
-import '../widgets/task_widget.dart';
+import '/data/custom_colors.dart';
+import '/data/notifiers.dart';
+import '/main.dart';
+import '/views/widgets/create_new_task_widget.dart';
+import '/data/task.dart';
+import '/data/user_info.dart';
+import '/views/widgets/task_widget.dart';
 
 class TasksPage extends StatefulWidget {
   final Function(Task) onSendTask;
@@ -28,14 +27,11 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  final _taskBox = Hive.box("taskBox");
-
   @override
   void dispose() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       newTasksNotifier.value = 0;
     });
-
     super.dispose();
   }
 
@@ -47,14 +43,12 @@ class _TasksPageState extends State<TasksPage> {
           height: constraints.maxHeight,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 10,
+            child: Stack(
+              alignment: Alignment.bottomRight,
               children: [
                 Expanded(
                   child: ValueListenableBuilder(
-                    valueListenable: _taskBox.listenable(),
+                    valueListenable: taskBox.listenable(),
                     builder: (context, box, child) {
                       List<Task> tasks = box.values.cast<Task>().toList();
                       tasks.sort((a, b) => a.time.compareTo(b.time));
@@ -89,7 +83,7 @@ class _TasksPageState extends State<TasksPage> {
                                 shape: Border.all(color: Colors.transparent),
                                 children: List.generate(map[title]!.length, (index) {
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 5),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                     child: TaskWidget(
                                       task: map[title]!.elementAt(index),
                                       onSendTask: widget.onSendTask,
@@ -102,24 +96,21 @@ class _TasksPageState extends State<TasksPage> {
                     },
                   ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    FloatingActionButton(
-                      backgroundColor: CustomColors.mainColor(colorTheme),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return CreateNewTaskWidget(onSendTask: widget.onSendTask);
-                          },
-                        );
-                      },
-                      child: Icon(Icons.add_rounded),
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
+                  child: FloatingActionButton(
+                    backgroundColor: CustomColors.mainColor(colorTheme),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return CreateNewTaskWidget(onSendTask: widget.onSendTask);
+                        },
+                      );
+                    },
+                    child: const Icon(Icons.add_rounded),
+                  ),
                 ),
-                SizedBox(height: 10),
               ],
             ),
           ),

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class CustomPage extends Page {
+class PageAnimation extends Page {
   final Widget child;
   final int newIndex;
   final int oldIndex;
 
-  const CustomPage({required this.child, required this.newIndex, required this.oldIndex, required LocalKey key})
+  const PageAnimation({required this.child, required this.newIndex, required this.oldIndex, required LocalKey key})
     : super(key: key);
 
   @override
@@ -19,8 +19,9 @@ class CustomPage extends Page {
         const Offset end = Offset.zero;
         const curve = Curves.fastEaseInToSlowEaseOut;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
+        Animation<Offset> offsetAnimation = animation.drive(
+          Tween(begin: begin, end: end).chain(CurveTween(curve: curve)),
+        );
 
         return SlideTransition(position: offsetAnimation, child: FadeTransition(opacity: animation, child: child));
       },
