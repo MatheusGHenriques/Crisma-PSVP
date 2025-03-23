@@ -4,16 +4,34 @@ Um app em Flutter para a Crisma da Paróquia São Vicente de Paulo de Belo Horiz
 
 ## Funcionalidades
 
-- **Envio de mensagens sem internet**: Permite a comunicação via rede local sem necessidade de conexão com a internet.
-- **Login de usuário**: Cada usuário pode se autenticar fornecendo seu nome e as tags que representam os grupos dos quais faz parte.
-- **Mensagens organizadas por grupo**: As mensagens são separadas por tags, garantindo uma comunicação mais organizada entre os participantes.
-- **Histórico de mensagens**: O app armazena as mensagens localmente por um período determinado.
+- **Comunicação via rede local**: 
+  - Permite envio de mensagens e comunicação em rede local, sem necessidade de internet.
+  - Descoberta de outros usuários na rede via broadcast utilizando o protocolo UDP.
+  - Conexão via TCP para envio confiável de mensagens, tarefas e PDFs.
+- **Login e autenticação de grupos**:
+  - Cada usuário pode se autenticar com seu nome.
+  - Para acessar um grupo, o usuário deve digitar uma senha exclusiva daquele grupo, garantindo a segurança e a exclusividade do acesso.
+- **Mensagens organizadas por grupo e tags**:
+  - As mensagens são separadas por tags, permitindo uma organização clara e eficiente da comunicação entre os participantes.
+- **Gerenciamento de tarefas**:
+  - Os usuários podem criar, aceitar e concluir tarefas.
+  - As tarefas são também organizadas por tags, facilitando o acompanhamento e a priorização das atividades.
+- **Cronograma em PDF**:
+  - Visualização do cronograma atualizado em formato PDF.
+  - Possibilidade de atualizar o cronograma diretamente pelo aplicativo.
+- **Artes animadas**:
+  - Utiliza Lotties para apresentar artes animadas e melhorar a experiência visual do usuário.
+- **Temas de cor**:
+  - Disponibilidade de 3 temas de cor, cada um com versões claras e escuras, permitindo personalização da interface de acordo com a preferência do usuário.
 
 ## Tecnologias Utilizadas
 
 - **Flutter**: Framework para desenvolvimento do app.
 - **Dart**: Linguagem de programação utilizada no desenvolvimento.
-- **Hive_CE**: Banco de dados local para armazenamento eficiente das mensagens.
+- **Hive_CE e Hive_CE_Flutter**: Bancos de dados locais para armazenamento eficiente das mensagens, tarefas e demais informações.
+- **flutter_pdfview**: Para visualização de arquivos PDF dentro do aplicativo.
+- **Lottie**: Para renderização de animações vetoriais.
+- **Path Provider**: Para gerenciamento de caminhos do sistema de arquivos.
 
 ## Como Rodar o Projeto
 
