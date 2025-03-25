@@ -16,11 +16,10 @@ class HomePage extends StatelessWidget {
     unreadMessagesNotifier.value = homeBox.get("unreadMessages") ?? 0;
     newTasksNotifier.value = homeBox.get("newTasks") ?? 0;
     updatedScheduleNotifier.value = homeBox.get("updatedSchedule") ?? false;
-
     return LayoutBuilder(
       builder: (context, constraints) {
         return Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.only(bottom: 20,left: 20, right: 20,),
           child: Center(
             child: SingleChildScrollView(
               child: Column(

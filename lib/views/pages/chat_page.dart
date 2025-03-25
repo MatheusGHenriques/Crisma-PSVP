@@ -175,7 +175,9 @@ class _ChatPageState extends State<ChatPage> {
                             controller: _sendMessageController,
                             maxLines: null,
                             keyboardType: TextInputType.multiline,
+                            maxLength: 1000,
                             decoration: InputDecoration(
+                              counterText: "",
                               hintText: selectedTagsNumber > 0 ? _stringTags : "Digite uma mensagem",
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),

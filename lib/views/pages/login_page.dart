@@ -90,7 +90,8 @@ class _LoginPageState extends State<LoginPage> {
             ),
             TextField(
               textAlign: TextAlign.center,
-              decoration: InputDecoration(hintText: "Digite seu nome aqui"),
+              maxLength: 30,
+              decoration: InputDecoration(hintText: "Digite seu nome aqui", counterText: ""),
               controller: _nameController,
             ),
             const Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),

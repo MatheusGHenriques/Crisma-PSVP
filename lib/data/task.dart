@@ -45,11 +45,41 @@ class Task extends HiveObject {
     if (identical(this, other)) return true;
     if (other is! Task) return false;
 
+    return sender == other.sender &&
+        numberOfPersons == other.numberOfPersons &&
+        description == other.description &&
+        time == other.time &&
+        _mapsEqual(persons, other.persons) &&
+        _mapsEqual(tags, other.tags);
+  }
+
+  bool compare(Task other) {
     return description == other.description && sender == other.sender && time == other.time;
   }
 
   @override
   int get hashCode {
-    return description.hashCode ^ sender.hashCode ^ time.hashCode;
+    return sender.hashCode ^
+        numberOfPersons.hashCode ^
+        _mapHash(persons) ^
+        description.hashCode ^
+        _mapHash(tags) ^
+        time.hashCode;
+  }
+
+  bool _mapsEqual(Map<String, bool> a, Map<String, bool> b) {
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+    return true;
+  }
+
+  int _mapHash(Map<String, bool> map) {
+    int result = 0;
+    for (final entry in map.entries) {
+      result ^= entry.key.hashCode ^ entry.value.hashCode;
+    }
+    return result;
   }
 }

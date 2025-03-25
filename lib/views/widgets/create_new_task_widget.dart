@@ -105,13 +105,13 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
                 controller: _taskDescriptionController,
                 maxLines: 5,
                 keyboardType: TextInputType.multiline,
+                maxLength: 500,
                 decoration: InputDecoration(
                   hintText: "Descreva a tarefa a ser criada",
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                   contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                 ),
               ),
-              const SizedBox(height: 5),
               const Text("Quem pode concluir essa tarefa?"),
               TagSelectionWidget(tags: _newTaskTags),
               ValueListenableBuilder(

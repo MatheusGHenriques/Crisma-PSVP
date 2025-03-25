@@ -27,11 +27,16 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
+  final List<Task> _tasksToDelete = [];
   @override
   void dispose() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       newTasksNotifier.value = 0;
     });
+    for(Task taskToDelete in _tasksToDelete){
+      taskToDelete.delete();
+    }
+    _tasksToDelete.clear();
     super.dispose();
   }
 
@@ -43,39 +48,42 @@ class _TasksPageState extends State<TasksPage> {
           height: constraints.maxHeight,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Stack(
-              alignment: Alignment.bottomRight,
+            child: Column(
               children: [
                 Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: taskBox.listenable(),
-                    builder: (context, box, child) {
-                      List<Task> tasks = box.values.cast<Task>().toList();
-                      tasks.sort((a, b) => a.time.compareTo(b.time));
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      ValueListenableBuilder(
+                        valueListenable: taskBox.listenable(),
+                        builder: (context, box, child) {
+                          List<Task> tasks = box.values.cast<Task>().toList();
+                          tasks.sort((a, b) => a.time.compareTo(b.time));
 
-                      List<Task> createdTasks = [], acceptedTasks = [], availableTasks = [];
+                          List<Task> createdTasks = [],
+                              acceptedTasks = [],
+                              availableTasks = [];
 
-                      for (Task task in tasks) {
-                        if (task.numberOfPersons < 0) {
-                          task.delete();
-                        } else if (userName == task.sender) {
-                          createdTasks.add(task);
-                        } else if (task.persons.containsKey(userName) && task.persons[userName] == false) {
-                          acceptedTasks.add(task);
-                        } else if (!task.persons.containsKey(userName) && TasksPage.userHasTaskTags(task)) {
-                          availableTasks.add(task);
-                        }
-                      }
+                          for (Task task in tasks) {
+                            if (task.numberOfPersons < 0) {
+                              _tasksToDelete.add(task);
+                            } else if (userName == task.sender) {
+                              createdTasks.add(task);
+                            } else if (task.persons.containsKey(userName) && task.persons[userName] == false) {
+                              acceptedTasks.add(task);
+                            } else if (!task.persons.containsKey(userName) && TasksPage.userHasTaskTags(task)) {
+                              availableTasks.add(task);
+                            }
+                          }
 
-                      List<Map<String, List<Task>>> tasksMenu = <Map<String, List<Task>>>[
-                        {'Tarefas que Criei (${createdTasks.length})': createdTasks},
-                        {'Tarefas que devo Concluir (${acceptedTasks.length})': acceptedTasks},
-                        {'Tarefas que posso Aceitar (${availableTasks.length})': availableTasks},
-                      ];
+                          List<Map<String, List<Task>>> tasksMenu = [
+                            {'Tarefas que Criei (${createdTasks.length})': createdTasks},
+                            {'Tarefas que devo Concluir (${acceptedTasks.length})': acceptedTasks},
+                            {'Tarefas que posso Aceitar (${availableTasks.length})': availableTasks},
+                          ];
 
-                      return ListView(
-                        children:
-                            tasksMenu.map((map) {
+                          return ListView(
+                            children: tasksMenu.map((map) {
                               String title = map.keys.first;
                               return ExpansionTile(
                                 initiallyExpanded: true,
@@ -92,23 +100,26 @@ class _TasksPageState extends State<TasksPage> {
                                 }),
                               );
                             }).toList(),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child: FloatingActionButton(
-                    backgroundColor: CustomThemes.mainColor(colorTheme),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return CreateNewTaskWidget(onSendTask: widget.onSendTask);
+                          );
                         },
-                      );
-                    },
-                    child: const Icon(Icons.add_rounded),
+                      ),
+                      Positioned(
+                        bottom: 20,
+                        right: 0,
+                        child: FloatingActionButton(
+                          backgroundColor: CustomThemes.mainColor(colorTheme),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return CreateNewTaskWidget(onSendTask: widget.onSendTask);
+                              },
+                            );
+                          },
+                          child: const Icon(Icons.add_rounded),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
