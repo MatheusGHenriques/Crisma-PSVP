@@ -20,8 +20,11 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
-  Future<String> _getPdf() async {
+  Future<String?> _getPdf() async {
     Directory dir = await getApplicationDocumentsDirectory();
+    if(pdfBox.isEmpty){
+      return null;
+    }
     Pdf pdf = pdfBox.get("pdf");
     List<int> fileBytes = base64Decode(pdf.base64String);
     String pdfPath = "${dir.path}/cronograma_retiro_app.pdf";

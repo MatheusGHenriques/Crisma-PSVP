@@ -1,7 +1,9 @@
-import 'package:crisma/data/message.dart';
-import 'package:crisma/data/pdf.dart';
-import 'package:crisma/data/task.dart';
+import '/data/message.dart';
+import '/data/pdf.dart';
+import '/data/task.dart';
 import 'package:hive_ce/hive.dart';
 
-@GenerateAdapters([AdapterSpec<Message>(), AdapterSpec<Task>(), AdapterSpec<Pdf>()])
+import '../data/poll.dart';
+
+@GenerateAdapters([AdapterSpec<Message>(), AdapterSpec<Task>(), AdapterSpec<Poll>(),AdapterSpec<Pdf>()])
 part 'hive_adapters.g.dart';

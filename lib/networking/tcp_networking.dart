@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:hive_ce/hive.dart';
+import '../data/poll.dart';
 import '/data/notifiers.dart';
 import '/data/user_info.dart';
 import '/views/pages/chat_page.dart';
@@ -29,9 +30,13 @@ class PeerToPeerTcpNetworking {
   final Set<Socket> _syncSentOnSocket = {};
 
   late Set<Message> _chatBoxMessages;
+  late Set<Poll> _taskBoxPolls;
+  late Set<Task> _taskBoxTasks;
 
   Future<void> start() async {
     _chatBoxMessages = chatBox.values.cast<Message>().toSet();
+    _taskBoxTasks = taskBox.values.whereType<Task>().cast<Task>().toSet();
+    _taskBoxPolls = taskBox.values.whereType<Poll>().cast<Poll>().toSet();
     _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, port, shared: true);
     _serverSocket?.listen(_handleIncomingConnection);
     await _startUdpDiscovery();
@@ -124,14 +129,24 @@ class PeerToPeerTcpNetworking {
   void _sendSyncResponse(Socket socket) {
     List<Map<String, dynamic>> messages = chatBox.values.cast<Message>().map((message) => message.toJson()).toList();
 
-    List<Map<String, dynamic>> tasks = taskBox.values.cast<Task>().map((task) => task.toJson()).toList();
+    List<Task> tasks = [];
+    List<Poll> polls = [];
+    for (var item in taskBox.values) {
+      if (item is Task) {
+        tasks.add(item);
+      } else if (item is Poll) {
+        polls.add(item);
+      }
+    }
+    List<Map<String, dynamic>> taskMaps = tasks.map((task) => task.toJson()).toList();
+    List<Map<String, dynamic>> pollMaps = polls.map((poll) => poll.toJson()).toList();
 
     List<Map<String, dynamic>> pdf = pdfBox.values.cast<Pdf>().map((pdf) => pdf.toJson()).toList();
 
     String jsonString =
         "${json.encode({
           'type': 'sync',
-          'payload': {'messages': messages, 'tasks': tasks, 'pdf': pdf},
+          'payload': {'messages': messages, 'tasks': taskMaps, 'polls': pollMaps, 'pdf': pdf},
           'sender': userName,
         })}\n";
     socket.write("$_heartbeatMessage\n");
@@ -179,23 +194,27 @@ class PeerToPeerTcpNetworking {
 
   void _handleIncomingData(Socket socket, List<int> data) {
     String dataStr = utf8.decode(data);
-    _socketBuffers[socket] = _socketBuffers[socket]! + dataStr;
+    _socketBuffers[socket] = (_socketBuffers[socket] ?? "") + dataStr;
     List<String> messages = _socketBuffers[socket]!.split("\n");
     _socketBuffers[socket] = messages.removeLast();
 
     for (String messageStr in messages) {
-      if (messageStr.trim().isEmpty) continue;
+      if (messageStr.trim().isEmpty) {
+        continue;
+      }
       Map<String, dynamic> jsonData = json.decode(messageStr);
       String type = jsonData['type'];
       if (type == 'heartbeat') {
         _lastHeartbeat[socket] = DateTime.now();
       } else if (type == 'message') {
         Message message = Message.fromJson(jsonData['payload']);
-        if (message.sender == userName) continue;
         _addMessageToChatBox(message);
       } else if (type == 'task') {
         Task task = Task.fromJson(jsonData['payload']);
         _addTaskToTaskBox(task);
+      } else if (type == 'poll') {
+        Poll poll = Poll.fromJson(jsonData['payload']);
+        _addPollToTaskBox(poll);
       } else if (type == 'pdf') {
         Pdf pdf = Pdf.fromJson(jsonData['payload']);
         _addPdfToPdfBox(pdf);
@@ -213,6 +232,12 @@ class PeerToPeerTcpNetworking {
           for (var taskJson in payload['tasks']) {
             Task task = Task.fromJson(taskJson);
             _addTaskToTaskBox(task);
+          }
+        }
+        if (payload.containsKey('polls')) {
+          for (var pollJson in payload['polls']) {
+            Poll poll = Poll.fromJson(pollJson);
+            _addPollToTaskBox(poll);
           }
         }
         if (payload.containsKey('pdf')) {
@@ -291,6 +316,14 @@ class PeerToPeerTcpNetworking {
     }
   }
 
+  void sendPoll(Poll poll) {
+    _addPollToTaskBox(poll);
+    String jsonString = "${json.encode({'type': 'poll', 'payload': poll.toJson()})}\n";
+    for (Socket peer in _peers) {
+      peer.write(jsonString);
+    }
+  }
+
   void sendPdf(Pdf pdf) {
     String jsonString = "${json.encode({'type': 'pdf', 'payload': pdf.toJson()})}\n";
     for (Socket peer in _peers) {
@@ -307,27 +340,38 @@ class PeerToPeerTcpNetworking {
 
   void _addMessageToChatBox(Message message) async {
     if (!_chatBoxMessages.contains(message)) {
-      if (ChatPage.userHasMessageTags(message) && message.sender != userName) {
+      _chatBoxMessages.add(message);
+      for(Message boxMessage in chatBox.values){
+        if(message.compare(boxMessage) && message.readBy.length > boxMessage.readBy.length){
+          _chatBoxMessages.remove(boxMessage);
+          boxMessage.delete();
+          break;
+        }
+      }
+      if (ChatPage.userHasMessageTags(message) && message.sender != userName && !message.readBy.contains(userName)) {
         unreadMessagesNotifier.value++;
       }
-      _chatBoxMessages.add(message);
       await chatBox.add(message);
+      await message.save();
       sendMessage(message);
     }
   }
 
   void _addTaskToTaskBox(Task task) async {
+    if (_taskBoxTasks.contains(task)) return;
+    _taskBoxTasks.add(task);
     bool addTask = false, comparable = false;
-    if (taskBox.values.contains(task)) return;
-    for (Task boxTask in taskBox.values) {
-      if (task.compare(boxTask)) {
-        comparable = true;
-        if (task.numberOfPersons < boxTask.numberOfPersons ||
-            (task.persons != boxTask.persons && task.persons.isNotEmpty && boxTask.persons.isNotEmpty)) {
-          addTask = true;
-          await boxTask.delete();
+    for (var boxTask in taskBox.values) {
+      if (boxTask is Task) {
+        if (task.compare(boxTask)) {
+          comparable = true;
+          if (task.numberOfPersons < boxTask.numberOfPersons ||
+              (task.persons != boxTask.persons && task.persons.isNotEmpty && boxTask.persons.isNotEmpty)) {
+            addTask = true;
+            await boxTask.delete();
+          }
+          break;
         }
-        break;
       }
     }
 
@@ -338,6 +382,49 @@ class PeerToPeerTcpNetworking {
       await taskBox.add(task);
       await task.save();
       sendTask(task);
+    }
+  }
+
+  bool _noTagsInPoll(Poll poll) {
+    for (bool tag in poll.tags.values) {
+      if (tag) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void _addPollToTaskBox(Poll poll) async {
+    if (_taskBoxPolls.contains(poll)) return;
+    _taskBoxPolls.add(poll);
+    bool addPoll = false, comparable = false;
+    for (var boxPoll in taskBox.values) {
+      if (boxPoll is Poll) {
+        if (poll.compare(boxPoll)) {
+          comparable = true;
+          if (poll.votes.keys.length > boxPoll.votes.keys.length || _noTagsInPoll(poll)) {
+            addPoll = true;
+            await boxPoll.delete();
+          } else if (poll.votes.keys.length == boxPoll.votes.keys.length) {
+            int totalPollValues = 0,
+                totalBoxPollValues = 0;
+            for (String key in poll.votes.keys) {
+              List<String> pollValues = poll.votes[key] ?? [];
+              totalPollValues += pollValues.length;
+              List<String> boxPollValues = boxPoll.votes[key] ?? [];
+              totalBoxPollValues += boxPollValues.length;
+            }
+            if (totalPollValues > totalBoxPollValues) {
+              addPoll = true;
+            }
+          }
+        }
+      }
+    }
+    if (addPoll || !comparable) {
+      await taskBox.add(poll);
+      await poll.save();
+      sendPoll(poll);
     }
   }
 

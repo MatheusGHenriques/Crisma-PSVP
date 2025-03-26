@@ -1,3 +1,4 @@
+import '/views/widgets/home_info_widget.dart';
 import 'package:flutter/material.dart';
 import '/data/message.dart';
 import '/data/user_info.dart';
@@ -22,6 +23,8 @@ class MessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String hours = message.time.hour < 10 ? '0${message.time.hour}' : message.time.hour.toString();
+    String minutes = message.time.minute < 10 ? '0${message.time.minute}' : message.time.minute.toString();
     return Align(
       alignment: message.sender == userName ? Alignment.centerRight : Alignment.centerLeft,
       child: ValueListenableBuilder(
@@ -69,29 +72,61 @@ class MessageWidget extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        Text(
+                          '$hours:$minutes',
+                          textAlign: TextAlign.end,
+                          style: TextStyle(fontSize: 11),
+                        ),
                       ],
                     )
-                    : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 5,
-                      children: [
-                        Text(
-                          _getTags(),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: CustomThemes.secondaryDarkColor(colorTheme),
+                    : InkWell(
+                      onLongPress: message.readBy.length > 0? () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return Dialog(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: SingleChildScrollView(
+                                  child: Wrap(
+                                    alignment: WrapAlignment.center,
+                                    children: List.generate(message.readBy.length, (index) {
+                                      return HomeInfoWidget(
+                                        title: message.readBy.elementAt(index),
+                                        description: "Lida",
+                                        icon: Icons.mark_chat_read_rounded,
+                                      );
+                                    }),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      } : null,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 5,
+                        children: [
+                          Text(
+                            _getTags(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: CustomThemes.secondaryDarkColor(colorTheme),
+                            ),
                           ),
-                        ),
-                        Text(
-                          message.text,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDarkMode ? Colors.white : null,
-                            fontWeight: FontWeight.bold,
+                          Text(
+                            message.text,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDarkMode ? Colors.white : null,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                          Text("$hours:$minutes", style: TextStyle(fontSize: 11)),
+                        ],
+                      ),
                     ),
           );
         },

@@ -24,6 +24,7 @@ Future<void> initHive() async {
   Hive.registerAdapter(MessageAdapter());
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(PdfAdapter());
+  Hive.registerAdapter(PollAdapter());
 
   await Hive.openBox("chatBox");
   await Hive.openBox("taskBox");

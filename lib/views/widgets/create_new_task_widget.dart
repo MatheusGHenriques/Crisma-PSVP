@@ -103,7 +103,7 @@ class _CreateNewTaskWidgetState extends State<CreateNewTaskWidget> {
               ),
               TextField(
                 controller: _taskDescriptionController,
-                maxLines: 5,
+                maxLines: 3,
                 keyboardType: TextInputType.multiline,
                 maxLength: 500,
                 decoration: InputDecoration(

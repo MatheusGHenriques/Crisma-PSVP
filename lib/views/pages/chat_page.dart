@@ -51,6 +51,7 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     selectedTagsNotifier.value = 0;
     _initController();
+    _readMessages();
     super.initState();
   }
 
@@ -64,7 +65,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void sendButtonClicked() {
     Map<String, bool> newTags = Map<String, bool>.from(selectedTags);
-    Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text);
+    Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text.trim());
     widget.onSendMessage(messageToSend);
     _sendMessageController.clear();
   }
@@ -74,8 +75,20 @@ class _ChatPageState extends State<ChatPage> {
     _sendMessageController.dispose();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unreadMessagesNotifier.value = 0;
+      _readMessages();
     });
     super.dispose();
+  }
+
+  void _readMessages(){
+    for(Message boxMessage in chatBox.values){
+      if(boxMessage.sender != userName && !boxMessage.readBy.contains(userName)){
+        List<String> readBy = List.from(boxMessage.readBy);
+        readBy.add(userName);
+        Message messageToSend = Message(tags: boxMessage.tags, sender: boxMessage.sender, text: boxMessage.text, readBy: readBy, time: boxMessage.time);
+        widget.onSendMessage(messageToSend);
+      }
+    }
   }
 
   @override
@@ -182,8 +195,6 @@ class _ChatPageState extends State<ChatPage> {
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                             ),
-                            enableInteractiveSelection: false,
-                            enableSuggestions: false,
                           );
                         },
                       ),

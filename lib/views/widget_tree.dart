@@ -47,8 +47,9 @@ class _WidgetTreeState extends State<WidgetTree> {
     _tcpNetworking.sendMessage(messageToSend);
   }
 
-  void tcpSendTask(Task taskToSend) {
-    _tcpNetworking.sendTask(taskToSend);
+  void tcpSendTask(dynamic taskToSend) {
+    taskToSend is Task ?
+    _tcpNetworking.sendTask(taskToSend) : _tcpNetworking.sendPoll(taskToSend);
   }
 
   void tcpSendPdf(Pdf pdfToSend) {

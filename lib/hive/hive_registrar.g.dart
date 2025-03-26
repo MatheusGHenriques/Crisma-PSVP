@@ -9,6 +9,7 @@ extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
     registerAdapter(MessageAdapter());
     registerAdapter(PdfAdapter());
+    registerAdapter(PollAdapter());
     registerAdapter(TaskAdapter());
   }
 }

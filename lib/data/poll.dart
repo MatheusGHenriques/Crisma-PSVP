@@ -1,67 +1,70 @@
 import 'package:hive_ce/hive.dart';
 import 'package:collection/collection.dart';
 
-class Task extends HiveObject {
+class Poll extends HiveObject {
   late String sender;
-  late int numberOfPersons;
-  late Map<String, bool> persons;
+  late bool openResponse;
+  late Map<String, List<String>> votes;
   late String description;
   late Map<String, bool> tags;
   late DateTime time;
 
-  Task({
+  Poll({
     required this.sender,
-    required this.numberOfPersons,
-    Map<String, bool>? persons,
+    required this.openResponse,
+    Map<String, List<String>>? votes,
     required this.description,
     required this.tags,
     DateTime? time,
-  })  : persons = persons ?? {},
+  })  : votes = votes ?? {},
         time = (time ?? DateTime.now()).copyWith(microsecond: 0);
 
   Map<String, dynamic> toJson() => {
     'sender': sender,
-    'numberOfPersons': numberOfPersons,
-    'persons': persons,
+    'openResponse': openResponse,
+    'votes': votes.map((key, value) => MapEntry(key, List<String>.from(value))),
     'description': description,
     'tags': tags,
     'time': time.toIso8601String(),
   };
 
-  static Task fromJson(Map<String, dynamic> json) => Task(
+  static Poll fromJson(Map<String, dynamic> json) => Poll(
     sender: json['sender'],
-    numberOfPersons: json['numberOfPersons'],
-    persons: Map<String, bool>.from(json['persons']),
+    openResponse: json['openResponse'],
+    votes: (json['votes'] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(key, List<String>.from(value)),
+    ),
     description: json['description'],
     tags: Map<String, bool>.from(json['tags']),
     time: DateTime.parse(json['time']),
   );
 
-  bool compare(Task other) =>
+  bool compare(Poll other) =>
       sender == other.sender &&
           description == other.description &&
-          time == other.time;
+          time == other.time &&
+          openResponse == other.openResponse;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! Task) return false;
+    if (other is! Poll) return false;
 
     return sender == other.sender &&
-        numberOfPersons == other.numberOfPersons &&
+        openResponse == other.openResponse &&
         description == other.description &&
         time == other.time &&
-        const DeepCollectionEquality().equals(persons, other.persons) &&
+        const DeepCollectionEquality().equals(votes, other.votes) &&
         const DeepCollectionEquality().equals(tags, other.tags);
   }
 
   @override
   int get hashCode => Object.hash(
     sender,
-    numberOfPersons,
+    openResponse,
     description,
     time,
-    const DeepCollectionEquality().hash(persons),
+    const DeepCollectionEquality().hash(votes),
     const DeepCollectionEquality().hash(tags),
   );
 }
