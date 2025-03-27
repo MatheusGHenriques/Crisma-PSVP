@@ -1,8 +1,8 @@
+import '../../main.dart';
 import '/views/widgets/home_info_widget.dart';
 import 'package:flutter/material.dart';
 import '/data/message.dart';
 import '/data/user_info.dart';
-import '/main.dart';
 import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 
@@ -80,7 +80,7 @@ class MessageWidget extends StatelessWidget {
                       ],
                     )
                     : InkWell(
-                      onLongPress: message.readBy.length > 0? () {
+                      onLongPress: message.readBy.isNotEmpty? () {
                         showDialog(
                           context: context,
                           builder: (context) {

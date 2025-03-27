@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../main.dart';
 import '/data/custom_themes.dart';
-import '/main.dart';
 import '/data/notifiers.dart';
 import '/data/task.dart';
 import '/data/user_info.dart';
@@ -97,7 +97,6 @@ class _TaskWidgetState extends State<TaskWidget> {
                     : CustomThemes.lightBackgroundColor(colorTheme),
           ),
           child: Row(
-            spacing: 20,
             children: [
               Expanded(
                 child: Column(
@@ -136,29 +135,32 @@ class _TaskWidgetState extends State<TaskWidget> {
                 ),
               ),
 
-              widget.task.sender == userName
-                  ? IconButton(
-                    onPressed: () {
-                      _deleteTask();
-                    },
-                    icon:
-                        _isTaskDone()
-                            ? Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black)
-                            : Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
-                  )
-                  : widget.task.persons.containsKey(userName)
-                  ? IconButton(
-                    onPressed: () {
-                      _concludeTask();
-                    },
-                    icon: Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black),
-                  )
-                  : IconButton(
-                    onPressed: () {
-                      _acceptTask();
-                    },
-                    icon: Icon(Icons.person_add_alt_1, color: isDarkMode ? Colors.white : Colors.black),
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: widget.task.sender == userName
+                    ? IconButton(
+                      onPressed: () {
+                        _deleteTask();
+                      },
+                      icon:
+                          _isTaskDone()
+                              ? Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black)
+                              : Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                    )
+                    : widget.task.persons.containsKey(userName)
+                    ? IconButton(
+                      onPressed: () {
+                        _concludeTask();
+                      },
+                      icon: Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                    )
+                    : IconButton(
+                      onPressed: () {
+                        _acceptTask();
+                      },
+                      icon: Icon(Icons.person_add_alt_1, color: isDarkMode ? Colors.white : Colors.black),
+                    ),
+              ),
             ],
           ),
         );

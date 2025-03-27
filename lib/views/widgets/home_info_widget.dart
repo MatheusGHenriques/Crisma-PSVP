@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '/data/custom_themes.dart';
 import '/main.dart';
+import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 
 class HomeInfoWidget extends StatelessWidget {

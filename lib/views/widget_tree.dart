@@ -1,3 +1,4 @@
+import 'package:crisma/views/widgets/logout_button.dart';
 import 'package:flutter/material.dart';
 import '/views/pages/chat_page.dart';
 import '/views/pages/page_animation.dart';
@@ -65,23 +66,7 @@ class _WidgetTreeState extends State<WidgetTree> {
         leading: ThemeColorButton(context: context),
         actions: [
           ThemeModeButton(),
-          IconButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    for (String tag in userTags.keys) {
-                      userTags[tag] = false;
-                    }
-                    userName = "";
-                    return LoginPage();
-                  },
-                ),
-              );
-            },
-            icon: const Icon(Icons.logout_rounded),
-          ),
+          LogoutButton(),
         ],
       ),
       body: ValueListenableBuilder<int>(

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../main.dart';
 import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
-import '/main.dart';
 
 class TagButtonWidget extends StatefulWidget {
   final String text;

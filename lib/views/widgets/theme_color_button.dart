@@ -7,29 +7,9 @@ class ThemeColorButton extends StatelessWidget {
   const ThemeColorButton({super.key, required this.context});
 
   void _switchTheme() {
-    if (colorTheme == 2) {
-      homeBox.put('colorTheme', 0);
-    } else {
-      homeBox.put('colorTheme', colorTheme + 1);
-    }
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const Dialog(
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              alignment: WrapAlignment.center,
-              children: [
-                Text('Tema alterado!', style: TextStyle(fontSize: 14)),
-                Text('Reinicie o App para aplicar!', style: TextStyle(fontSize: 14)),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    ++colorTheme == 3 ? colorTheme = 0 : colorTheme;
+    homeBox.put('colorTheme', colorTheme);
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MyApp(),), (route) => false,);
   }
 
   @override

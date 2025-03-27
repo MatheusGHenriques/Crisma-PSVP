@@ -43,10 +43,12 @@ class _PollWidgetState extends State<PollWidget> {
   }
 
   void _sendPoll() async {
-    widget.poll.votes.forEach((key, votesList) {
-      votesList.remove(userName);
-    });
-    widget.poll.votes[_selectedOption]!.add(userName);
+    if(_selectedOption != null) {
+      widget.poll.votes.forEach((key, votesList) {
+        votesList.remove(userName);
+      });
+      widget.poll.votes[_selectedOption]!.add(userName);
+    }
     setState(() {
       widget.onSendPoll(widget.poll);
     });
@@ -175,14 +177,17 @@ class _PollWidgetState extends State<PollWidget> {
                 ),
               ),
 
-              widget.poll.sender == userName
-                  ? IconButton(
-                    onPressed: () {
-                      _deletePoll();
-                    },
-                    icon: Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
-                  )
-                  : SizedBox(),
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: widget.poll.sender == userName
+                    ? IconButton(
+                      onPressed: () {
+                        _deletePoll();
+                      },
+                      icon: Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                    )
+                    : SizedBox(),
+              ),
             ],
           ),
         );
