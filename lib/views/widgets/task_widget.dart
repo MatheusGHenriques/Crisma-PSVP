@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../main.dart';
+import '/main.dart';
 import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 import '/data/task.dart';

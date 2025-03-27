@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '/views/pages/chat_page.dart';
 import '/views/pages/page_animation.dart';
 import '/views/pages/home_page.dart';
-import '/views/pages/login_page.dart';
 import '/views/pages/schedule_page.dart';
 import '/views/pages/tasks_page.dart';
 import '/views/widgets/navigation_bar_widget.dart';
@@ -13,7 +12,6 @@ import '/data/message.dart';
 import '/data/notifiers.dart';
 import '/data/pdf.dart';
 import '/data/task.dart';
-import '/data/user_info.dart';
 import '/networking/tcp_networking.dart';
 
 class WidgetTree extends StatefulWidget {

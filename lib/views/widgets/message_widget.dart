@@ -1,6 +1,6 @@
-import '../../main.dart';
-import '/views/widgets/home_info_widget.dart';
 import 'package:flutter/material.dart';
+import '/main.dart';
+import '/views/widgets/home_info_widget.dart';
 import '/data/message.dart';
 import '/data/user_info.dart';
 import '/data/custom_themes.dart';

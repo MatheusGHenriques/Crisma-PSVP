@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../data/user_info.dart';
-import '../pages/login_page.dart';
+import '/data/user_info.dart';
+import '/views/pages/login_page.dart';
 
 class LogoutButton extends StatelessWidget {
   const LogoutButton({super.key});

@@ -83,16 +83,16 @@ class _PollWidgetState extends State<PollWidget> {
           contentPadding: EdgeInsets.zero,
           value: text,
           groupValue: _selectedOption,
-          onChanged: (value) {
+          onChanged: _selectedOption == null ? (value) {
             setState(() {
-              _selectedOption = value;
+              _selectedOption = value as String;
               _sendPoll();
             });
-          },
+          } : null,
         ),
       );
     }
-    if (widget.poll.openResponse) {
+    if (widget.poll.openResponse && _selectedOption == null) {
       result.add(
         RadioListTile(
           title: TextField(
