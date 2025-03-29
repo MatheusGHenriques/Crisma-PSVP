@@ -36,8 +36,7 @@ class Message extends HiveObject {
   bool compare(Message other) =>
       sender == other.sender &&
           text == other.text &&
-          time == other.time &&
-          const DeepCollectionEquality().equals(tags, other.tags);
+          time == other.time;
 
   @override
   bool operator ==(Object other) {

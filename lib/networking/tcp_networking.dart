@@ -58,7 +58,7 @@ class PeerToPeerTcpNetworking {
     });
   }
 
-  Future<void> dispose() async{
+  Future<void> dispose() async {
     await _serverSocket?.close();
     _serverSocket = null;
     _udpSocket?.close();
@@ -74,7 +74,7 @@ class PeerToPeerTcpNetworking {
     connectedPeersNotifier.value = 0;
   }
 
-  void restart() async{
+  void restart() async {
     await dispose();
     await start();
   }
@@ -114,7 +114,7 @@ class PeerToPeerTcpNetworking {
     for (var item in taskBox.values) {
       if (item is Task) {
         tasks.add(item);
-      } else{
+      } else {
         polls.add(item);
       }
     }
@@ -186,10 +186,10 @@ class PeerToPeerTcpNetworking {
 
       final handlers = {
         'heartbeat': () => _lastHeartbeat[socket] = DateTime.now(),
-        'message': () => _addMessageToChatBox(Message.fromJson(jsonData['payload'])),
-        'task': () => _addTaskToTaskBox(Task.fromJson(jsonData['payload'])),
-        'poll': () => _addPollToTaskBox(Poll.fromJson(jsonData['payload'])),
-        'pdf': () => _addPdfToPdfBox(Pdf.fromJson(jsonData['payload'])),
+        'message': () => addMessageToChatBox(Message.fromJson(jsonData['payload'])),
+        'task': () => addTaskToTaskBox(Task.fromJson(jsonData['payload'])),
+        'poll': () => addPollToTaskBox(Poll.fromJson(jsonData['payload'])),
+        'pdf': () => addPdfToPdfBox(Pdf.fromJson(jsonData['payload'])),
         'sync': () => _handleSync(jsonData['payload']),
         'discovery_request': () => _handleDiscoveryRequest(socket, jsonData),
       };
@@ -207,10 +207,10 @@ class PeerToPeerTcpNetworking {
     };
 
     final addToBox = {
-      'messages': (obj) => _addMessageToChatBox(obj as Message),
-      'tasks': (obj) => _addTaskToTaskBox(obj as Task),
-      'polls': (obj) => _addPollToTaskBox(obj as Poll),
-      'pdf': (obj) => _addPdfToPdfBox(obj as Pdf),
+      'messages': (obj) => addMessageToChatBox(obj as Message),
+      'tasks': (obj) => addTaskToTaskBox(obj as Task),
+      'polls': (obj) => addPollToTaskBox(obj as Poll),
+      'pdf': (obj) => addPdfToPdfBox(obj as Pdf),
     };
 
     for (var key in typeHandlers.keys) {
@@ -269,23 +269,23 @@ class PeerToPeerTcpNetworking {
     connectedPeersNotifier.value = _peers.length;
   }
 
-  void sendMessage(Message message) {
-    _addMessageToChatBox(message);
+  void _sendMessage(Message message) {
+    addMessageToChatBox(message);
     writeToPeers("${json.encode({'type': 'message', 'payload': message.toJson()})}\n");
   }
 
-  void sendTask(Task task) {
-    _addTaskToTaskBox(task);
+  void _sendTask(Task task) {
+    addTaskToTaskBox(task);
     writeToPeers("${json.encode({'type': 'task', 'payload': task.toJson()})}\n");
   }
 
-  void sendPoll(Poll poll) {
-    _addPollToTaskBox(poll);
+  void _sendPoll(Poll poll) {
+    addPollToTaskBox(poll);
     writeToPeers("${json.encode({'type': 'poll', 'payload': poll.toJson()})}\n");
   }
 
-  void sendPdf(Pdf pdf) {
-    _addPdfToPdfBox(pdf);
+  void _sendPdf(Pdf pdf) {
+    addPdfToPdfBox(pdf);
     writeToPeers("${json.encode({'type': 'pdf', 'payload': pdf.toJson()})}\n");
   }
 
@@ -295,12 +295,12 @@ class PeerToPeerTcpNetworking {
     }
   }
 
-  void _addMessageToChatBox(Message message) async {
+  void addMessageToChatBox(Message message) async {
     if (_chatBoxMessages.contains(message)) return;
     _chatBoxMessages.add(message);
     for (Message boxMessage in chatBox.values) {
-      if (message.compare(boxMessage) && message.readBy.length > boxMessage.readBy.length) {
-        _chatBoxMessages.remove(boxMessage);
+      if (message.compare(boxMessage) && (message.readBy.length > boxMessage.readBy.length || message.tags.isEmpty)) {
+        if (!message.readBy.contains(userName)) unreadMessagesNotifier.value--;
         boxMessage.delete();
         break;
       }
@@ -310,10 +310,10 @@ class PeerToPeerTcpNetworking {
     }
     await chatBox.add(message);
     await message.save();
-    sendMessage(message);
+    _sendMessage(message);
   }
 
-  void _addTaskToTaskBox(Task task) async {
+  void addTaskToTaskBox(Task task) async {
     if (_taskBoxTasks.contains(task)) return;
     _taskBoxTasks.add(task);
     for (var boxTask in taskBox.values.whereType<Task>()) {
@@ -327,7 +327,7 @@ class PeerToPeerTcpNetworking {
     await taskBox.add(task);
     await task.save();
     _checkAndUpdateNewTasksNotifier(task);
-    sendTask(task);
+    _sendTask(task);
   }
 
   bool _shouldReplaceTask(Task newTask, Task existingTask) {
@@ -339,7 +339,7 @@ class PeerToPeerTcpNetworking {
     if (TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0) newTasksNotifier.value++;
   }
 
-  void _addPollToTaskBox(Poll poll) async {
+  void addPollToTaskBox(Poll poll) async {
     if (_taskBoxPolls.contains(poll)) return;
     _taskBoxPolls.add(poll);
     for (var boxPoll in taskBox.values.whereType<Poll>()) {
@@ -352,7 +352,7 @@ class PeerToPeerTcpNetworking {
     }
     await taskBox.add(poll);
     await poll.save();
-    sendPoll(poll);
+    _sendPoll(poll);
     _checkAndUpdateNewPollNotifier(poll);
   }
 
@@ -381,11 +381,11 @@ class PeerToPeerTcpNetworking {
     }
   }
 
-  void _addPdfToPdfBox(Pdf pdf) async {
+  void addPdfToPdfBox(Pdf pdf) async {
     if (pdfBox.isEmpty || await pdfBox.get("pdf").time.isBefore(pdf.time)) {
       await pdfBox.put("pdf", pdf);
       updatedScheduleNotifier.value = true;
-      sendPdf(pdf);
+      _sendPdf(pdf);
     }
   }
 }

@@ -1,5 +1,5 @@
-import 'package:crisma/views/widgets/logout_button.dart';
 import 'package:flutter/material.dart';
+import '/views/widgets/logout_button.dart';
 import '/views/pages/chat_page.dart';
 import '/views/pages/page_animation.dart';
 import '/views/pages/home_page.dart';
@@ -43,16 +43,16 @@ class _WidgetTreeState extends State<WidgetTree> {
   }
 
   void tcpSendMessage(Message messageToSend) {
-    _tcpNetworking.sendMessage(messageToSend);
+    _tcpNetworking.addMessageToChatBox(messageToSend);
   }
 
   void tcpSendTask(dynamic taskToSend) {
     taskToSend is Task ?
-    _tcpNetworking.sendTask(taskToSend) : _tcpNetworking.sendPoll(taskToSend);
+    _tcpNetworking.addTaskToTaskBox(taskToSend) : _tcpNetworking.addPollToTaskBox(taskToSend);
   }
 
   void tcpSendPdf(Pdf pdfToSend) {
-    _tcpNetworking.sendPdf(pdfToSend);
+    _tcpNetworking.addPdfToPdfBox(pdfToSend);
   }
 
   @override
@@ -61,6 +61,7 @@ class _WidgetTreeState extends State<WidgetTree> {
       appBar: AppBar(
         title: const Text("Crisma PSVP"),
         centerTitle: true,
+        forceMaterialTransparency: true,
         leading: ThemeColorButton(context: context),
         actions: [
           ThemeModeButton(),

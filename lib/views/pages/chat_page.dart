@@ -44,8 +44,7 @@ class _ChatPageState extends State<ChatPage> {
     "Mulheres": false,
   };
   bool _hasMessage = false;
-
-  final chatBox = Hive.box("chatBox");
+  final List<Message> _messagesToDelete = [];
 
   @override
   void initState() {
@@ -77,6 +76,10 @@ class _ChatPageState extends State<ChatPage> {
       unreadMessagesNotifier.value = 0;
       _readMessages();
     });
+    for(Message messageToDelete in _messagesToDelete){
+      messageToDelete.delete();
+    }
+    _messagesToDelete.clear();
     super.dispose();
   }
 
@@ -117,11 +120,12 @@ class _ChatPageState extends State<ChatPage> {
                       builder: (context, box, child) {
                         List<Message> messages = box.values.cast<Message>().toList();
                         messages.sort((a, b) => a.time.compareTo(b.time));
+                        _messagesToDelete.addAll(messages.where((element) => element.tags.isEmpty,));
                         messages.removeWhere((element) {
-                          return !ChatPage.userHasMessageTags(element);
+                          return !ChatPage.userHasMessageTags(element) || element.tags.isEmpty;
                         });
                         int newMessagesIndicatorPosition = messages.length - unreadMessagesNotifier.value;
-                        return unreadMessagesNotifier.value > 0
+                        return unreadMessagesNotifier.value > 0 && messages.isNotEmpty
                             ? Column(
                               spacing: 5,
                               children: List.generate(messages.length + 1, (index) {
@@ -134,16 +138,27 @@ class _ChatPageState extends State<ChatPage> {
                                       ],
                                     )
                                     : newMessagesIndicatorPosition < index
-                                    ? MessageWidget(message: messages.elementAt(index - 1))
-                                    : MessageWidget(message: messages.elementAt(index));
+                                    ? MessageWidget(
+                                      message: messages.elementAt(index - 1),
+                                      onSendMessage: widget.onSendMessage,
+                                    )
+                                    : MessageWidget(
+                                      message: messages.elementAt(index),
+                                      onSendMessage: widget.onSendMessage,
+                                    );
                               }),
                             )
-                            : Column(
+                            : messages.isNotEmpty ? Column(
                               spacing: 5,
                               children: List.generate(messages.length, (index) {
-                                return MessageWidget(message: messages.elementAt(index));
+                                return MessageWidget(
+                                  message: messages.elementAt(index),
+                                  onSendMessage: widget.onSendMessage,
+                                );
                               }),
-                            );
+                            ) : const Column(
+                          children: [],
+                        );
                       },
                     ),
                   ),

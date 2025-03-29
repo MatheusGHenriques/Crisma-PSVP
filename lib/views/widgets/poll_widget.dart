@@ -172,7 +172,7 @@ class _PollWidgetState extends State<PollWidget> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ListView(shrinkWrap: true, children: _generateVotes()),
+                    ListView(shrinkWrap: true, physics: NeverScrollableScrollPhysics(), children: _generateVotes()),
                   ],
                 ),
               ),

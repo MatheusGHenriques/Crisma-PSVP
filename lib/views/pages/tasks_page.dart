@@ -118,7 +118,7 @@ class _TasksPageState extends State<TasksPage> {
                             {'Tarefas que Criei (${createdTasks.length})': createdTasks},
                             {'Enquetes que Criei (${createdPolls.length})': createdPolls},
                             {'Tarefas que devo Concluir (${acceptedTasks.length})': acceptedTasks},
-                            {'Enquetes que posso Participar(${acceptedPolls.length})': acceptedPolls},
+                            {'Enquetes que posso Participar (${acceptedPolls.length})': acceptedPolls},
                             {'Tarefas que posso Aceitar (${availableTasks.length})': availableTasks},
                           ];
 

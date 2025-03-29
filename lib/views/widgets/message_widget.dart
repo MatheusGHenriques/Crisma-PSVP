@@ -8,8 +8,9 @@ import '/data/notifiers.dart';
 
 class MessageWidget extends StatelessWidget {
   final Message message;
+  final Function(Message) onSendMessage;
 
-  const MessageWidget({super.key, required this.message});
+  const MessageWidget({super.key, required this.message, required this.onSendMessage});
 
   String _getTags() {
     String tags = "";
@@ -72,15 +73,11 @@ class MessageWidget extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Text(
-                          '$hours:$minutes',
-                          textAlign: TextAlign.end,
-                          style: TextStyle(fontSize: 11),
-                        ),
+                        Text('$hours:$minutes', textAlign: TextAlign.end, style: TextStyle(fontSize: 11)),
                       ],
                     )
                     : InkWell(
-                      onLongPress: message.readBy.isNotEmpty? () {
+                      onLongPress: () {
                         showDialog(
                           context: context,
                           builder: (context) {
@@ -88,22 +85,42 @@ class MessageWidget extends StatelessWidget {
                               child: Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: SingleChildScrollView(
-                                  child: Wrap(
-                                    alignment: WrapAlignment.center,
-                                    children: List.generate(message.readBy.length, (index) {
-                                      return HomeInfoWidget(
-                                        title: message.readBy.elementAt(index),
-                                        description: "Lida",
-                                        icon: Icons.mark_chat_read_rounded,
-                                      );
-                                    }),
+                                  child: Column(
+                                    spacing: 10,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      FilledButton(
+                                        onPressed: () {
+                                          Message newMessage = Message(
+                                            tags: {},
+                                            sender: userName,
+                                            text: message.text,
+                                            time: message.time,
+                                            readBy: message.readBy,
+                                          );
+                                          onSendMessage(newMessage);
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('Apagar Mensagem'),
+                                      ),
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        children: List.generate(message.readBy.length, (index) {
+                                          return HomeInfoWidget(
+                                            title: message.readBy.elementAt(index),
+                                            description: "Lida",
+                                            icon: Icons.mark_chat_read_rounded,
+                                          );
+                                        }),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             );
                           },
                         );
-                      } : null,
+                      },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         spacing: 5,
@@ -124,7 +141,7 @@ class MessageWidget extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text("$hours:$minutes", style: TextStyle(fontSize: 11)),
+                          Text("$hours:$minutes", style: TextStyle(fontSize: 11), textAlign: TextAlign.end),
                         ],
                       ),
                     ),
