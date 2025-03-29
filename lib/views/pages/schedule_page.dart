@@ -22,7 +22,7 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   Future<String?> _getPdf() async {
     Directory dir = await getApplicationDocumentsDirectory();
-    if(pdfBox.isEmpty){
+    if (pdfBox.isEmpty) {
       return null;
     }
     Pdf pdf = pdfBox.get("pdf");
@@ -39,8 +39,8 @@ class _SchedulePageState extends State<SchedulePage> {
       File file = File(result.files.single.path!);
       List<int> fileBytes = await file.readAsBytes();
       String base64String = base64Encode(fileBytes);
-      await pdfBox.put("pdf", Pdf(base64String: base64String));
-      widget.onSendPdf(pdfBox.values.single);
+      Pdf pdf = Pdf(base64String: base64String);
+      widget.onSendPdf(pdf);
     }
   }
 
@@ -144,8 +144,9 @@ class _SchedulePageState extends State<SchedulePage> {
                 },
               ),
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                 child: FloatingActionButton(
+                  elevation: 0,
                   backgroundColor: CustomThemes.mainColor(colorTheme),
                   onPressed: _checkToUpdatePdf,
                   child: const Icon(Icons.upload_rounded),

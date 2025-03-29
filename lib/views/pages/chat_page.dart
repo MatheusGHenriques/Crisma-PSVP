@@ -80,12 +80,18 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
-  void _readMessages(){
-    for(Message boxMessage in chatBox.values){
-      if(boxMessage.sender != userName && !boxMessage.readBy.contains(userName)){
+  void _readMessages() {
+    for (Message boxMessage in chatBox.values) {
+      if (boxMessage.sender != userName && !boxMessage.readBy.contains(userName)) {
         List<String> readBy = List.from(boxMessage.readBy);
         readBy.add(userName);
-        Message messageToSend = Message(tags: boxMessage.tags, sender: boxMessage.sender, text: boxMessage.text, readBy: readBy, time: boxMessage.time);
+        Message messageToSend = Message(
+          tags: boxMessage.tags,
+          sender: boxMessage.sender,
+          text: boxMessage.text,
+          readBy: readBy,
+          time: boxMessage.time,
+        );
         widget.onSendMessage(messageToSend);
       }
     }
@@ -216,7 +222,7 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 5),
+                SizedBox(),
               ],
             ),
           ),

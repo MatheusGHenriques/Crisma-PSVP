@@ -13,13 +13,14 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool enabledConnectionsButton = true;
     unreadMessagesNotifier.value = homeBox.get("unreadMessages") ?? 0;
     newTasksNotifier.value = homeBox.get("newTasks") ?? 0;
     updatedScheduleNotifier.value = homeBox.get("updatedSchedule") ?? false;
     return LayoutBuilder(
       builder: (context, constraints) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 20,left: 20, right: 20,),
+          padding: const EdgeInsets.only(left: 20, right: 20),
           child: Center(
             child: SingleChildScrollView(
               child: Column(
@@ -27,10 +28,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: 10,
                 children: [
-                  Lottie.asset(
-                    CustomThemes.lottie(colorTheme),
-                    width: MediaQuery.of(context).size.width / 2,
-                  ),
+                  Lottie.asset(CustomThemes.lottie(colorTheme), width: MediaQuery.of(context).size.width / 2),
                   ValueListenableBuilder(
                     valueListenable: isDarkModeNotifier,
                     builder: (context, darkMode, child) {
@@ -80,7 +78,14 @@ class HomePage extends StatelessWidget {
                                         },
                                       );
                                     }
-                                    : tcpNetworking.sendUdpDiscoveryRequest,
+                                    : enabledConnectionsButton
+                                    ? () async {
+                                      enabledConnectionsButton = false;
+                                      tcpNetworking.restart();
+                                      await Future.delayed(Duration(seconds: 5));
+                                      enabledConnectionsButton = true;
+                                    }
+                                    : null,
                             child: HomeInfoWidget(
                               title: "Conexões",
                               description: connectedPeers.toString(),

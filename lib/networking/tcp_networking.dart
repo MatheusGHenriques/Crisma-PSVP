@@ -18,13 +18,12 @@ class PeerToPeerTcpNetworking {
 
   final List<Socket> _peers = [];
   final Map<Socket, String> _socketBuffers = {};
-  final Map<Socket, DateTime> _lastHeartbeat = {};
-  final String _heartbeatMessage = json.encode({'type': 'heartbeat'});
-  final List<Socket> _peersToRemove = [];
-
   final Map<Socket, String> socketDeviceNames = {};
   final Map<Socket, bool> _socketIsOutgoing = {};
   final Set<Socket> _syncSentOnSocket = {};
+  final Map<Socket, DateTime> _lastHeartbeat = {};
+  final String _heartbeatMessage = json.encode({'type': 'heartbeat'});
+  final List<Socket> _peersToRemove = [];
 
   late Set<Message> _chatBoxMessages;
   late Set<Poll> _taskBoxPolls;
@@ -59,13 +58,13 @@ class PeerToPeerTcpNetworking {
     });
   }
 
-  void dispose() {
-    _serverSocket?.close();
+  Future<void> dispose() async{
+    await _serverSocket?.close();
     _serverSocket = null;
     _udpSocket?.close();
     _udpSocket = null;
     for (Socket peer in _peers) {
-      peer.close();
+      await peer.close();
     }
     _peers.clear();
     _socketBuffers.clear();
@@ -73,6 +72,11 @@ class PeerToPeerTcpNetworking {
     _socketIsOutgoing.clear();
     _syncSentOnSocket.clear();
     connectedPeersNotifier.value = 0;
+  }
+
+  void restart() async{
+    await dispose();
+    await start();
   }
 
   Future<void> _startUdp() async {
@@ -85,14 +89,11 @@ class PeerToPeerTcpNetworking {
     if (event != RawSocketEvent.read) return;
     Datagram? datagram = _udpSocket?.receive();
     if (datagram == null) return;
-    Map<String, dynamic> jsonData;
-    jsonData = json.decode(utf8.decode(datagram.data));
+    Map<String, dynamic> jsonData = json.decode(utf8.decode(datagram.data));
     if (jsonData['type'] == 'discovery_request' && jsonData['sender'] != userName) {
       String peerIp = datagram.address.address;
       bool alreadyConnected = _peers.any((socket) => socket.remoteAddress.address == peerIp);
-      if (!alreadyConnected) {
-        connectToPeer(peerIp);
-      }
+      if (!alreadyConnected) connectToPeer(peerIp);
     }
   }
 
@@ -113,7 +114,7 @@ class PeerToPeerTcpNetworking {
     for (var item in taskBox.values) {
       if (item is Task) {
         tasks.add(item);
-      } else if (item is Poll) {
+      } else{
         polls.add(item);
       }
     }
@@ -270,130 +271,113 @@ class PeerToPeerTcpNetworking {
 
   void sendMessage(Message message) {
     _addMessageToChatBox(message);
-    String jsonString = "${json.encode({'type': 'message', 'payload': message.toJson()})}\n";
-    for (Socket peer in _peers) {
-      peer.write(jsonString);
-    }
+    writeToPeers("${json.encode({'type': 'message', 'payload': message.toJson()})}\n");
   }
 
   void sendTask(Task task) {
     _addTaskToTaskBox(task);
-    String jsonString = "${json.encode({'type': 'task', 'payload': task.toJson()})}\n";
-    for (Socket peer in _peers) {
-      peer.write(jsonString);
-    }
+    writeToPeers("${json.encode({'type': 'task', 'payload': task.toJson()})}\n");
   }
 
   void sendPoll(Poll poll) {
     _addPollToTaskBox(poll);
-    String jsonString = "${json.encode({'type': 'poll', 'payload': poll.toJson()})}\n";
-    for (Socket peer in _peers) {
-      peer.write(jsonString);
-    }
+    writeToPeers("${json.encode({'type': 'poll', 'payload': poll.toJson()})}\n");
   }
 
   void sendPdf(Pdf pdf) {
-    String jsonString = "${json.encode({'type': 'pdf', 'payload': pdf.toJson()})}\n";
+    _addPdfToPdfBox(pdf);
+    writeToPeers("${json.encode({'type': 'pdf', 'payload': pdf.toJson()})}\n");
+  }
+
+  void writeToPeers(String jsonString) {
     for (Socket peer in _peers) {
       peer.write(jsonString);
     }
   }
 
   void _addMessageToChatBox(Message message) async {
-    if (!_chatBoxMessages.contains(message)) {
-      _chatBoxMessages.add(message);
-      for (Message boxMessage in chatBox.values) {
-        if (message.compare(boxMessage) && message.readBy.length > boxMessage.readBy.length) {
-          _chatBoxMessages.remove(boxMessage);
-          boxMessage.delete();
-          break;
-        }
+    if (_chatBoxMessages.contains(message)) return;
+    _chatBoxMessages.add(message);
+    for (Message boxMessage in chatBox.values) {
+      if (message.compare(boxMessage) && message.readBy.length > boxMessage.readBy.length) {
+        _chatBoxMessages.remove(boxMessage);
+        boxMessage.delete();
+        break;
       }
-      if (ChatPage.userHasMessageTags(message) && message.sender != userName && !message.readBy.contains(userName)) {
-        unreadMessagesNotifier.value++;
-      }
-      await chatBox.add(message);
-      await message.save();
-      sendMessage(message);
     }
+    if (ChatPage.userHasMessageTags(message) && message.sender != userName && !message.readBy.contains(userName)) {
+      unreadMessagesNotifier.value++;
+    }
+    await chatBox.add(message);
+    await message.save();
+    sendMessage(message);
   }
 
   void _addTaskToTaskBox(Task task) async {
     if (_taskBoxTasks.contains(task)) return;
     _taskBoxTasks.add(task);
-    bool addTask = false, comparable = false;
-    for (var boxTask in taskBox.values) {
-      if (boxTask is Task) {
-        if (task.compare(boxTask)) {
-          comparable = true;
-          if (task.numberOfPersons < boxTask.numberOfPersons ||
-              (task.persons != boxTask.persons && task.persons.isNotEmpty && boxTask.persons.isNotEmpty)) {
-            addTask = true;
-            await boxTask.delete();
-          }
-          break;
-        }
+    for (var boxTask in taskBox.values.whereType<Task>()) {
+      if (!task.compare(boxTask)) continue;
+      if (_shouldReplaceTask(task, boxTask)) {
+        await boxTask.delete();
+        break;
       }
+      return;
     }
-
-    if (addTask || !comparable) {
-      if (TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0) {
-        newTasksNotifier.value++;
-      }
-      await taskBox.add(task);
-      await task.save();
-      sendTask(task);
-    }
+    await taskBox.add(task);
+    await task.save();
+    _checkAndUpdateNewTasksNotifier(task);
+    sendTask(task);
   }
 
-  bool _noTagsInPoll(Poll poll) {
-    for (bool tag in poll.tags.values) {
-      if (tag) {
-        return false;
-      }
-    }
-    return true;
+  bool _shouldReplaceTask(Task newTask, Task existingTask) {
+    return newTask.numberOfPersons < existingTask.numberOfPersons ||
+        (newTask.persons.isNotEmpty && existingTask.persons.isNotEmpty && newTask.persons != existingTask.persons);
+  }
+
+  void _checkAndUpdateNewTasksNotifier(Task task) {
+    if (TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0) newTasksNotifier.value++;
   }
 
   void _addPollToTaskBox(Poll poll) async {
     if (_taskBoxPolls.contains(poll)) return;
     _taskBoxPolls.add(poll);
-    bool addPoll = false, comparable = false;
-    for (var boxPoll in taskBox.values) {
-      if (boxPoll is Poll) {
-        if (poll.compare(boxPoll)) {
-          comparable = true;
-          if (poll.votes.keys.length > boxPoll.votes.keys.length || _noTagsInPoll(poll)) {
-            addPoll = true;
-            await boxPoll.delete();
-          } else if (poll.votes.keys.length == boxPoll.votes.keys.length) {
-            int totalPollValues = 0, totalBoxPollValues = 0;
-            for (String key in poll.votes.keys) {
-              List<String> pollValues = poll.votes[key] ?? [];
-              totalPollValues += pollValues.length;
-              List<String> boxPollValues = boxPoll.votes[key] ?? [];
-              totalBoxPollValues += boxPollValues.length;
-            }
-            if (totalPollValues > totalBoxPollValues) {
-              addPoll = true;
-            }
-          }
-        }
+    for (var boxPoll in taskBox.values.whereType<Poll>()) {
+      if (!poll.compare(boxPoll)) continue;
+      if (_shouldReplacePoll(poll, boxPoll)) {
+        await boxPoll.delete();
+        break;
       }
+      return;
     }
-    if (addPoll || !comparable) {
-      await taskBox.add(poll);
-      await poll.save();
-      sendPoll(poll);
-      if (TasksPage.userHasPollTags(poll) &&
-          !poll.votes.values.any((element) {
-            for (String voted in element) {
-              if (userName == voted) return true;
-            }
-            return false;
-          })) {
-        newTasksNotifier.value++;
-      }
+    await taskBox.add(poll);
+    await poll.save();
+    sendPoll(poll);
+    _checkAndUpdateNewPollNotifier(poll);
+  }
+
+  bool _shouldReplacePoll(Poll newPoll, Poll existingPoll) {
+    if (newPoll.votes.keys.length > existingPoll.votes.keys.length || _noTagsInPoll(newPoll)) return true;
+    if (newPoll.votes.keys.length == existingPoll.votes.keys.length) return _hasMoreVotes(newPoll, existingPoll);
+    return false;
+  }
+
+  bool _noTagsInPoll(Poll poll) {
+    for (bool tag in poll.tags.values) {
+      if (tag) return false;
+    }
+    return true;
+  }
+
+  bool _hasMoreVotes(Poll newPoll, Poll existingPoll) {
+    int newPollVotes = newPoll.votes.values.fold(0, (sum, list) => sum + list.length);
+    int existingPollVotes = existingPoll.votes.values.fold(0, (sum, list) => sum + list.length);
+    return newPollVotes > existingPollVotes;
+  }
+
+  void _checkAndUpdateNewPollNotifier(Poll poll) {
+    if (TasksPage.userHasPollTags(poll) && !poll.votes.values.any((voters) => voters.contains(userName))) {
+      newTasksNotifier.value++;
     }
   }
 

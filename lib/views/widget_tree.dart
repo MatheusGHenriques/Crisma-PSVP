@@ -86,7 +86,7 @@ class _WidgetTreeState extends State<WidgetTree> {
           return Navigator(pages: [page]);
         },
       ),
-      bottomNavigationBar: NavigationBarWidget(),
+      bottomNavigationBar: NavigationBarWidget(onTabChange: (index) => selectedPageNotifier.value = index,),
     );
   }
 }

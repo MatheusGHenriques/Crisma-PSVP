@@ -146,9 +146,9 @@ class _TasksPageState extends State<TasksPage> {
                         },
                       ),
                       Positioned(
-                        bottom: 20,
-                        right: 0,
+                        bottom: 5,
                         child: FloatingActionButton(
+                          elevation: 0,
                           backgroundColor: CustomThemes.mainColor(colorTheme),
                           onPressed: () {
                             showDialog(
