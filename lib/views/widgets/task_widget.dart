@@ -28,15 +28,13 @@ class _TaskWidgetState extends State<TaskWidget> {
 
   List<Text> _getPersons() {
     List<Text> persons = [];
-    late Text text;
     for (String person in widget.task.persons.keys) {
-      if (persons.isNotEmpty) {
-        persons.add(Text(", "));
-      }
+      if (persons.isNotEmpty) persons.add(Text(", "));
+      Text text;
       if (widget.task.persons[person]!) {
         text = Text(
           person,
-          style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.lineThrough, decorationThickness: 2),
+          style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.lineThrough, decorationThickness: 3),
         );
       } else {
         text = Text(person, style: TextStyle(fontWeight: FontWeight.bold));
@@ -46,37 +44,42 @@ class _TaskWidgetState extends State<TaskWidget> {
     return persons;
   }
 
-  bool _isTaskDone() {
-    if (widget.task.persons.isEmpty || widget.task.numberOfPersons > 0) return false;
-    for (bool isDone in widget.task.persons.values) {
-      if (!isDone) {
-        return false;
-      }
+  bool _isTaskDone(Task task) {
+    if (task.persons.isEmpty || task.numberOfPersons > 0) return false;
+    for (bool isDone in task.persons.values) {
+      if (!isDone) return false;
     }
     return true;
   }
 
-  void _sendTask() async {
-    setState(() {
-      widget.onSendTask(widget.task);
-    });
-    await widget.task.save();
+  Task _cloneTask(Task task) {
+    return Task(
+      sender: task.sender,
+      description: task.description,
+      tags: Map<String, bool>.from(task.tags),
+      numberOfPersons: task.numberOfPersons,
+      persons: Map<String, bool>.from(task.persons),
+      time: task.time,
+    );
   }
 
   void _deleteTask() {
-    widget.task.numberOfPersons = -1;
-    _sendTask();
+    Task newTask = _cloneTask(widget.task);
+    newTask.numberOfPersons = -1;
+    widget.onSendTask(newTask);
   }
 
   void _concludeTask() {
-    widget.task.persons[userName] = true;
-    _sendTask();
+    Task newTask = _cloneTask(widget.task);
+    newTask.persons[userName] = true;
+    widget.onSendTask(newTask);
   }
 
   void _acceptTask() {
-    widget.task.numberOfPersons--;
-    widget.task.persons[userName] = false;
-    _sendTask();
+    Task newTask = _cloneTask(widget.task);
+    newTask.numberOfPersons--;
+    newTask.persons[userName] = false;
+    widget.onSendTask(newTask);
   }
 
   @override
@@ -88,7 +91,7 @@ class _TaskWidgetState extends State<TaskWidget> {
           padding: const EdgeInsets.all(12),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(25)),
+            borderRadius: const BorderRadius.all(Radius.circular(25)),
             color:
                 widget.task.sender == userName
                     ? CustomThemes.secondaryLightColor(colorTheme)
@@ -101,7 +104,6 @@ class _TaskWidgetState extends State<TaskWidget> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 5,
                   children: [
                     widget.task.sender != userName
                         ? Text(
@@ -134,32 +136,26 @@ class _TaskWidgetState extends State<TaskWidget> {
                   ],
                 ),
               ),
-
               Padding(
                 padding: const EdgeInsets.only(right: 10),
-                child: widget.task.sender == userName
-                    ? IconButton(
-                      onPressed: () {
-                        _deleteTask();
-                      },
-                      icon:
-                          _isTaskDone()
-                              ? Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black)
-                              : Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
-                    )
-                    : widget.task.persons.containsKey(userName)
-                    ? IconButton(
-                      onPressed: () {
-                        _concludeTask();
-                      },
-                      icon: Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black),
-                    )
-                    : IconButton(
-                      onPressed: () {
-                        _acceptTask();
-                      },
-                      icon: Icon(Icons.person_add_alt_1, color: isDarkMode ? Colors.white : Colors.black),
-                    ),
+                child:
+                    widget.task.sender == userName
+                        ? IconButton(
+                          onPressed: _deleteTask,
+                          icon:
+                              _isTaskDone(_cloneTask(widget.task))
+                                  ? Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black)
+                                  : Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                        )
+                        : widget.task.persons.containsKey(userName)
+                        ? IconButton(
+                          onPressed: _concludeTask,
+                          icon: Icon(Icons.check_circle_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                        )
+                        : IconButton(
+                          onPressed: _acceptTask,
+                          icon: Icon(Icons.person_add_alt_1, color: isDarkMode ? Colors.white : Colors.black),
+                        ),
               ),
             ],
           ),

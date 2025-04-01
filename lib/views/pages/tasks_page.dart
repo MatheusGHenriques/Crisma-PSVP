@@ -39,22 +39,11 @@ class TasksPage extends StatefulWidget {
 }
 
 class _TasksPageState extends State<TasksPage> {
-  final List<Task> _tasksToDelete = [];
-  final List<Poll> _pollsToDelete = [];
-
   @override
   void dispose() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       newTasksNotifier.value = 0;
     });
-    for (Task taskToDelete in _tasksToDelete) {
-      taskToDelete.delete();
-    }
-    for (Poll pollToDelete in _pollsToDelete) {
-      pollToDelete.delete();
-    }
-    _tasksToDelete.clear();
-    _pollsToDelete.clear();
     super.dispose();
   }
 
@@ -94,22 +83,24 @@ class _TasksPageState extends State<TasksPage> {
 
                           for (Task task in tasks) {
                             if (task.numberOfPersons < 0) {
-                              _tasksToDelete.add(task);
+                              continue;
                             } else if (userName == task.sender) {
                               createdTasks.add(task);
                             } else if (task.persons.containsKey(userName) && task.persons[userName] == false) {
                               acceptedTasks.add(task);
-                            } else if (!task.persons.containsKey(userName) && TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0) {
+                            } else if (!task.persons.containsKey(userName) &&
+                                TasksPage.userHasTaskTags(task) &&
+                                task.numberOfPersons > 0) {
                               availableTasks.add(task);
                             }
                           }
 
                           for (Poll poll in polls) {
-                            if(!poll.tags.values.contains(true)){
-                              _pollsToDelete.add(poll);
-                            }else if (poll.sender == userName) {
+                            if (!poll.tags.values.contains(true)) {
+                              continue;
+                            } else if (poll.sender == userName) {
                               createdPolls.add(poll);
-                            } else if(TasksPage.userHasPollTags(poll)){
+                            } else if (TasksPage.userHasPollTags(poll)) {
                               acceptedPolls.add(poll);
                             }
                           }
@@ -123,25 +114,27 @@ class _TasksPageState extends State<TasksPage> {
                           ];
 
                           return ListView(
-                            children: tasksMenu.map((map) {
-                              String title = map.keys.first;
-                              List<dynamic> items = map[title]!;
+                            children:
+                                tasksMenu.map((map) {
+                                  String title = map.keys.first;
+                                  List<dynamic> items = map[title]!;
 
-                              return ExpansionTile(
-                                initiallyExpanded: true,
-                                title: Text(title),
-                                shape: Border.all(color: Colors.transparent),
-                                children: List.generate(items.length, (index) {
-                                  var item = items[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                    child: item is Task
-                                        ? TaskWidget(task: item, onSendTask: widget.onSendTask)
-                                        : PollWidget(poll: item, onSendPoll: widget.onSendTask),
+                                  return ExpansionTile(
+                                    initiallyExpanded: true,
+                                    title: Text(title),
+                                    shape: Border.all(color: Colors.transparent),
+                                    children: List.generate(items.length, (index) {
+                                      var item = items[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        child:
+                                            item is Task
+                                                ? TaskWidget(task: item, onSendTask: widget.onSendTask)
+                                                : PollWidget(poll: item, onSendPoll: widget.onSendTask),
+                                      );
+                                    }),
                                   );
-                                }),
-                              );
-                            }).toList(),
+                                }).toList(),
                           );
                         },
                       ),

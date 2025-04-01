@@ -32,6 +32,19 @@ class _PollWidgetState extends State<PollWidget> {
     super.initState();
   }
 
+  Poll _clonePoll(Poll poll) {
+    return Poll(
+      sender: poll.sender,
+      description: poll.description,
+      tags: Map<String, bool>.from(poll.tags),
+      votes: Map<String, List<String>>.fromEntries(
+        poll.votes.entries.map((entry) => MapEntry(entry.key, List<String>.from(entry.value))),
+      ),
+      openResponse: poll.openResponse,
+      time: poll.time,
+    );
+  }
+
   String _getTags() {
     String tags = "";
     for (String tag in widget.poll.tags.keys) {
@@ -43,23 +56,20 @@ class _PollWidgetState extends State<PollWidget> {
   }
 
   void _sendPoll() async {
-    if(_selectedOption != null) {
-      widget.poll.votes.forEach((key, votesList) {
-        votesList.remove(userName);
-      });
-      widget.poll.votes[_selectedOption]!.add(userName);
+    Poll newPoll = _clonePoll(widget.poll);
+    if (!newPoll.votes.containsKey(_selectedOption)) {
+      newPoll.votes[_selectedOption!] = [];
     }
-    setState(() {
-      widget.onSendPoll(widget.poll);
-    });
-    await widget.poll.save();
+    newPoll.votes[_selectedOption]!.add(userName);
+    widget.onSendPoll(newPoll);
   }
 
-  void _deletePoll() {
-    for (String key in widget.poll.tags.keys) {
-      widget.poll.tags[key] = false;
+  void _deletePoll() async {
+    Poll newPoll = _clonePoll(widget.poll);
+    for (String key in newPoll.tags.keys) {
+      newPoll.tags[key] = false;
     }
-    _sendPoll();
+    widget.onSendPoll(newPoll);
   }
 
   String _getVotesNumbers(String text) {
@@ -68,8 +78,8 @@ class _PollWidgetState extends State<PollWidget> {
   }
 
   List<Widget> _generateVotes() {
-    for(String key in widget.poll.votes.keys){
-      if(widget.poll.votes[key]!.contains(userName)){
+    for (String key in widget.poll.votes.keys) {
+      if (widget.poll.votes[key]!.contains(userName)) {
         _selectedOption = key;
       }
     }
@@ -83,12 +93,15 @@ class _PollWidgetState extends State<PollWidget> {
           contentPadding: EdgeInsets.zero,
           value: text,
           groupValue: _selectedOption,
-          onChanged: _selectedOption == null ? (value) {
-            setState(() {
-              _selectedOption = value as String;
-              _sendPoll();
-            });
-          } : null,
+          onChanged:
+              _selectedOption == null
+                  ? (value) {
+                    setState(() {
+                      _selectedOption = value as String;
+                      _sendPoll();
+                    });
+                  }
+                  : null,
         ),
       );
     }
@@ -105,13 +118,12 @@ class _PollWidgetState extends State<PollWidget> {
           value: _newVoteController.text,
           groupValue: _selectedOption,
           onChanged:
-              _hasNewVote && _newVoteController.text != ""
+              _hasNewVote && _newVoteController.text.isNotEmpty
                   ? (value) {
-                    widget.poll.votes[_newVoteController.text] = [];
-                      _newVoteController.clear();
                     setState(() {
                       _selectedOption = value as String?;
                       _sendPoll();
+                      _newVoteController.clear();
                     });
                   }
                   : null,
@@ -139,12 +151,10 @@ class _PollWidgetState extends State<PollWidget> {
                     : CustomThemes.lightBackgroundColor(colorTheme),
           ),
           child: Row(
-            spacing: 20,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 5,
                   children: [
                     widget.poll.sender != userName
                         ? Text(
@@ -172,21 +182,23 @@ class _PollWidgetState extends State<PollWidget> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ListView(shrinkWrap: true, physics: NeverScrollableScrollPhysics(), children: _generateVotes()),
+                    ListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: _generateVotes(),
+                    ),
                   ],
                 ),
               ),
-
               Padding(
                 padding: const EdgeInsets.only(right: 10),
-                child: widget.poll.sender == userName
-                    ? IconButton(
-                      onPressed: () {
-                        _deletePoll();
-                      },
-                      icon: Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
-                    )
-                    : SizedBox(),
+                child:
+                    widget.poll.sender == userName
+                        ? IconButton(
+                          onPressed: _deletePoll,
+                          icon: Icon(Icons.close_rounded, color: isDarkMode ? Colors.white : Colors.black),
+                        )
+                        : const SizedBox(),
               ),
             ],
           ),

@@ -1,6 +1,9 @@
+import 'package:crisma/data/poll.dart';
+import 'package:crisma/data/task.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'data/custom_themes.dart';
+import 'data/message.dart';
 import 'hive/hive_adapters.dart';
 import 'views/pages/login_page.dart';
 import 'views/widget_tree.dart';
@@ -49,18 +52,20 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    initThemeMode();
-    getUser();
+    _initThemeMode();
+    _getUser();
+    _deleteMessages();
+    _deleteTasks();
     super.initState();
   }
 
-  void initThemeMode() async {
+  void _initThemeMode() async {
     colorTheme = await homeBox.get('colorTheme') ?? 0;
     bool? darkMode = await homeBox.get('themeMode');
     isDarkModeNotifier.value = darkMode ?? false;
   }
 
-  void getUser() async {
+  void _getUser() async {
     userName = await homeBox.get("userName") ?? "";
     for (String tag in userTags.keys) {
       userTags[tag] = await homeBox.get(tag) ?? false;
@@ -68,6 +73,27 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _loaded = true;
     });
+  }
+
+  void _deleteMessages() {
+    DateTime now = DateTime.now();
+    for (Message messageToDelete in chatBox.values) {
+      if (messageToDelete.tags.isEmpty && messageToDelete.time.difference(now) > Duration(days: 1)) {
+        messageToDelete.delete();
+      }
+    }
+  }
+
+  void _deleteTasks() {
+    DateTime now = DateTime.now();
+    for (var taskToDelete in taskBox.values) {
+      if (taskToDelete.time.difference(now) > Duration(days: 1)) {
+        if ((taskToDelete is Task && taskToDelete.numberOfPersons < 0) ||
+            taskToDelete is Poll && !taskToDelete.tags.values.contains(true)) {
+          taskToDelete.delete();
+        }
+      }
+    }
   }
 
   @override

@@ -44,13 +44,11 @@ class _ChatPageState extends State<ChatPage> {
     "Mulheres": false,
   };
   bool _hasMessage = false;
-  final List<Message> _messagesToDelete = [];
 
   @override
   void initState() {
     selectedTagsNotifier.value = 0;
     _initController();
-    _readMessages();
     super.initState();
   }
 
@@ -74,18 +72,20 @@ class _ChatPageState extends State<ChatPage> {
     _sendMessageController.dispose();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unreadMessagesNotifier.value = 0;
-      _readMessages();
     });
-    for(Message messageToDelete in _messagesToDelete){
-      messageToDelete.delete();
-    }
-    _messagesToDelete.clear();
     super.dispose();
+  }
+
+  bool _messageHasUserTags(Message message) {
+    for (String key in message.tags.keys) {
+      if (message.tags[key]! && userTags[key]!) return true;
+    }
+    return false;
   }
 
   void _readMessages() {
     for (Message boxMessage in chatBox.values) {
-      if (boxMessage.sender != userName && !boxMessage.readBy.contains(userName)) {
+      if (boxMessage.sender != userName && !boxMessage.readBy.contains(userName) && _messageHasUserTags(boxMessage)) {
         List<String> readBy = List.from(boxMessage.readBy);
         readBy.add(userName);
         Message messageToSend = Message(
@@ -118,9 +118,10 @@ class _ChatPageState extends State<ChatPage> {
                     child: ValueListenableBuilder(
                       valueListenable: chatBox.listenable(),
                       builder: (context, box, child) {
+                        _readMessages();
                         List<Message> messages = box.values.cast<Message>().toList();
                         messages.sort((a, b) => a.time.compareTo(b.time));
-                        _messagesToDelete.addAll(messages.where((element) => element.tags.isEmpty,));
+
                         messages.removeWhere((element) {
                           return !ChatPage.userHasMessageTags(element) || element.tags.isEmpty;
                         });
@@ -148,7 +149,8 @@ class _ChatPageState extends State<ChatPage> {
                                     );
                               }),
                             )
-                            : messages.isNotEmpty ? Column(
+                            : messages.isNotEmpty
+                            ? Column(
                               spacing: 5,
                               children: List.generate(messages.length, (index) {
                                 return MessageWidget(
@@ -156,9 +158,8 @@ class _ChatPageState extends State<ChatPage> {
                                   onSendMessage: widget.onSendMessage,
                                 );
                               }),
-                            ) : const Column(
-                          children: [],
-                        );
+                            )
+                            : const Column(children: []);
                       },
                     ),
                   ),
