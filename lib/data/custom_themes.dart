@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomThemes {
-  static final List<Color> _mainColor = [Colors.redAccent, Colors.greenAccent[400]!, Colors.blue];
+  static final List<Color> _mainColor = [Colors.redAccent, Colors.greenAccent[700]!, Colors.blue];
   static final List<Color> _secondaryDarkColor = [Colors.red[900]!, Colors.green[900]!, Colors.blue[900]!];
   static final List<Color> _secondaryLightColor = [Colors.red[300]!, Colors.green[300]!, Colors.blue[300]!];
   static final List<Color> _darkModeBackgroundColor = [
@@ -15,10 +15,9 @@ class CustomThemes {
     Color.alphaBlend(Colors.blue.withAlpha(50), Colors.white),
   ];
   static final String _lightModeImage = 'assets/images/light_logo.png';
-
   static final String _darkModeImage = 'assets/images/dark_logo.png';
 
-  static final List<String> _lotties = ['assets/lotties/crisma_logo.json', '', 'assets/lotties/mini_logo.json'];
+  static final List<String> _lotties = ['assets/lotties/crisma_logo.json', 'assets/lotties/retiro_logo.json', 'assets/lotties/mini_logo.json'];
 
   static Color mainColor(int index) {
     return _mainColor.elementAt(index);

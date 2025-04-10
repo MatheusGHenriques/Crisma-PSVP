@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: ThemeColorButton(context: context), actions: [ThemeModeButton()]),
+      appBar: AppBar(leading: ThemeColorButton(context: context), forceMaterialTransparency: true, actions: [ThemeModeButton()]),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
         child: Column(
