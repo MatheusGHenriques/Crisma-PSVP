@@ -39,7 +39,7 @@ class _SchedulePageState extends State<SchedulePage> {
       File file = File(result.files.single.path!);
       List<int> fileBytes = await file.readAsBytes();
       String base64String = base64Encode(fileBytes);
-      Pdf pdf = Pdf(base64String: base64String);
+      Pdf pdf = Pdf(title: 'Cronograma', type: 'Cronograma', base64String: base64String);
       widget.onSendPdf(pdf);
     }
   }
@@ -110,7 +110,7 @@ class _SchedulePageState extends State<SchedulePage> {
             alignment: Alignment.bottomRight,
             children: [
               ValueListenableBuilder(
-                valueListenable: pdfBox.listenable(),
+                valueListenable: pdfBox.listenable(keys: ['pdf']),
                 builder: (context, box, child) {
                   return FutureBuilder<String?>(
                     future: _getPdf(),
@@ -136,7 +136,7 @@ class _SchedulePageState extends State<SchedulePage> {
                         return SizedBox(
                           height: constraints.maxHeight,
                           width: MediaQuery.of(context).size.width,
-                          child: Align(alignment: Alignment.center, child: const Text("Nenhum PDF por enquanto")),
+                          child: Align(alignment: Alignment.center, child: const Text("Sem Cronograma por enquanto")),
                         );
                       }
                     },

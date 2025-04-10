@@ -163,16 +163,25 @@ class PdfAdapter extends TypeAdapter<Pdf> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Pdf(base64String: fields[0] as String, time: fields[1] as DateTime?);
+    return Pdf(
+      title: fields[0] as String,
+      type: fields[1] as String,
+      base64String: fields[2] as String,
+      time: fields[3] as DateTime?,
+    );
   }
 
   @override
   void write(BinaryWriter writer, Pdf obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(0)
-      ..write(obj.base64String)
+      ..write(obj.title)
       ..writeByte(1)
+      ..write(obj.type)
+      ..writeByte(2)
+      ..write(obj.base64String)
+      ..writeByte(3)
       ..write(obj.time);
   }
 

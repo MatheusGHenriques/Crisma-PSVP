@@ -51,9 +51,13 @@ types:
         index: 5
   Pdf:
     typeId: 3
-    nextIndex: 2
+    nextIndex: 4
     fields:
-      base64String:
+      title:
         index: 0
-      time:
+      type:
         index: 1
+      base64String:
+        index: 2
+      time:
+        index: 3

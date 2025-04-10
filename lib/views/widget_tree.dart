@@ -1,3 +1,5 @@
+import '/data/user_info.dart';
+import '/views/pages/music_page.dart';
 import 'package:flutter/material.dart';
 import '/views/widgets/logout_button.dart';
 import '/views/pages/chat_page.dart';
@@ -57,6 +59,13 @@ class _WidgetTreeState extends State<WidgetTree> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      HomePage(tcpNetworking: _tcpNetworking),
+      ChatPage(onSendMessage: tcpSendMessage),
+      TasksPage(onSendTask: tcpSendTask),
+      SchedulePage(onSendPdf: tcpSendPdf),
+    ];
+    if(userTags['Música'] == true) pages.add(MusicPage(onSendPdf: tcpSendPdf,));
     return Scaffold(
       appBar: AppBar(
         title: const Text("Crisma PSVP"),
@@ -71,12 +80,6 @@ class _WidgetTreeState extends State<WidgetTree> {
       body: ValueListenableBuilder<int>(
         valueListenable: selectedPageNotifier,
         builder: (context, selectedPage, child) {
-          final pages = [
-            HomePage(tcpNetworking: _tcpNetworking),
-            ChatPage(onSendMessage: tcpSendMessage),
-            TasksPage(onSendTask: tcpSendTask),
-            SchedulePage(onSendPdf: tcpSendPdf),
-          ];
           final page = PageAnimation(
             key: ValueKey(selectedPage),
             newIndex: selectedPage,

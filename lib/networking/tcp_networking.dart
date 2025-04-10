@@ -28,11 +28,13 @@ class PeerToPeerTcpNetworking {
   late Set<Message> _chatBoxMessages;
   late Set<Poll> _taskBoxPolls;
   late Set<Task> _taskBoxTasks;
+  late Set<Pdf> _pdfBoxPdfs;
 
   Future<void> start() async {
     _chatBoxMessages = chatBox.values.cast<Message>().toSet();
     _taskBoxTasks = taskBox.values.whereType<Task>().cast<Task>().toSet();
     _taskBoxPolls = taskBox.values.whereType<Poll>().cast<Poll>().toSet();
+    _pdfBoxPdfs = pdfBox.values.cast<Pdf>().toSet();
     _serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, port, shared: true);
     _serverSocket?.listen(_handleIncomingConnection);
     await _startUdp();
@@ -382,9 +384,16 @@ class PeerToPeerTcpNetworking {
   }
 
   void addPdfToPdfBox(Pdf pdf) async {
-    if (pdfBox.isEmpty || await pdfBox.get("pdf").time.isBefore(pdf.time)) {
-      await pdfBox.put("pdf", pdf);
-      updatedScheduleNotifier.value = true;
+    if(_pdfBoxPdfs.contains(pdf)) return;
+    _pdfBoxPdfs.add(pdf);
+    if(pdf.type == 'Cronograma') {
+      if (pdfBox.isEmpty || await pdfBox.get("pdf").time.isBefore(pdf.time)) {
+        await pdfBox.put("pdf", pdf);
+        updatedScheduleNotifier.value = true;
+        _sendPdf(pdf);
+      }
+    }else{
+      await pdfBox.add(pdf);
       _sendPdf(pdf);
     }
   }

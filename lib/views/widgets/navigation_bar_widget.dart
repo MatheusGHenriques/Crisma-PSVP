@@ -1,3 +1,4 @@
+import 'package:crisma/data/user_info.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import '/data/custom_themes.dart';
@@ -14,6 +15,15 @@ class NavigationBarWidget extends StatelessWidget {
       valueListenable: isDarkModeNotifier,
       builder: (context, isDarkMode, child) {
         return ValueListenableBuilder(valueListenable: selectedPageNotifier, builder: (context, selectedPage, child) {
+          List<GButton> tabs = [
+            GButton(icon: Icons.home_rounded,iconSize: selectedPage == 0 ? 30 : 20,),
+            GButton(icon: Icons.message_rounded,iconSize: selectedPage == 1 ? 30 : 20,),
+            GButton(icon: Icons.checklist_rtl_rounded,iconSize: selectedPage == 2 ? 30 : 20,),
+            GButton(icon: Icons.schedule_rounded,iconSize: selectedPage == 3 ? 30 : 20,),
+          ];
+          if(userTags['Música']!){
+            tabs.add(GButton(icon: Icons.music_note_rounded,iconSize: selectedPage == 4 ? 30 : 20,),);
+          }
           return GNav(
             duration: Duration(milliseconds: 100),
             selectedIndex: selectedPage,
@@ -21,12 +31,7 @@ class NavigationBarWidget extends StatelessWidget {
             onTabChange: onTabChange,
             activeColor: isDarkMode ? Colors.white : Colors.black,
             color: isDarkMode ? CustomThemes.secondaryDarkColor(colorTheme) : CustomThemes.secondaryLightColor(colorTheme),
-            tabs:[
-              GButton(icon: Icons.home_rounded,iconSize: selectedPage == 0 ? 30 : 20,),
-              GButton(icon: Icons.message_rounded,iconSize: selectedPage == 1 ? 30 : 20,),
-              GButton(icon: Icons.checklist_rtl_rounded,iconSize: selectedPage == 2 ? 30 : 20,),
-              GButton(icon: Icons.schedule_rounded,iconSize: selectedPage == 3 ? 30 : 20,),
-            ],
+            tabs: tabs,
           );
         },);
       },
