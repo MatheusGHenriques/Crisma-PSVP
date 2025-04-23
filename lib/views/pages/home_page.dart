@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import '/services/networking.dart';
 import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 import '/main.dart';
-import '/networking/tcp_networking.dart';
 import '/views/widgets/home_info_widget.dart';
 
 class HomePage extends StatelessWidget {
-  final PeerToPeerTcpNetworking tcpNetworking;
+  final PeerToPeerNetworking tcpNetworking;
 
   const HomePage({super.key, required this.tcpNetworking});
 
   @override
   Widget build(BuildContext context) {
     bool enabledConnectionsButton = true;
-    unreadMessagesNotifier.value = homeBox.get("unreadMessages") ?? 0;
-    newTasksNotifier.value = homeBox.get("newTasks") ?? 0;
-    updatedScheduleNotifier.value = homeBox.get("updatedSchedule") ?? false;
     return LayoutBuilder(
       builder: (context, constraints) {
         return Padding(
@@ -97,7 +94,6 @@ class HomePage extends StatelessWidget {
                       ValueListenableBuilder(
                         valueListenable: unreadMessagesNotifier,
                         builder: (context, unreadMessages, child) {
-                          homeBox.put("unreadMessages", unreadMessages);
                           return InkWell(
                             splashColor: Colors.transparent,
                             highlightColor: Colors.transparent,
@@ -121,7 +117,6 @@ class HomePage extends StatelessWidget {
                       ValueListenableBuilder(
                         valueListenable: newTasksNotifier,
                         builder: (context, newTasks, child) {
-                          homeBox.put("newTasks", newTasks);
                           return InkWell(
                             splashColor: Colors.transparent,
                             highlightColor: Colors.transparent,
@@ -139,7 +134,6 @@ class HomePage extends StatelessWidget {
                       ValueListenableBuilder(
                         valueListenable: updatedScheduleNotifier,
                         builder: (context, updatedSchedule, child) {
-                          homeBox.put("updatedSchedule", updatedSchedule);
                           return InkWell(
                             splashColor: Colors.transparent,
                             highlightColor: Colors.transparent,

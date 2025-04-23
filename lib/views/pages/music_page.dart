@@ -19,6 +19,14 @@ class MusicPage extends StatefulWidget {
 
 class _MusicPageState extends State<MusicPage> {
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      newCiphersNotifier.value = 0;
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Set<Pdf> ciphersSet = {};
     return LayoutBuilder(

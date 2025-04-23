@@ -48,6 +48,9 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     selectedTagsNotifier.value = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unreadMessagesNotifier.value = 0;
+    });
     _initController();
     super.initState();
   }

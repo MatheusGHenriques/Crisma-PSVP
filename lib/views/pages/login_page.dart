@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void pressedContinueButton() async {
-    userName = _nameController.text;
+    userName = _nameController.text.trim();
     selectedPageNotifier.value = 0;
     for (String tag in loginTags.keys) {
       userTags[tag] = loginTags[tag]!;
@@ -67,7 +67,11 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: ThemeColorButton(context: context), forceMaterialTransparency: true, actions: [ThemeModeButton()]),
+      appBar: AppBar(
+        leading: ThemeColorButton(context: context),
+        forceMaterialTransparency: true,
+        actions: [ThemeModeButton()],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
         child: Column(
@@ -75,10 +79,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           spacing: 20,
           children: [
-            Lottie.asset(
-              CustomThemes.lottie(colorTheme),
-              width: MediaQuery.of(context).size.width / 2,
-            ),
+            Lottie.asset(CustomThemes.lottie(colorTheme), width: MediaQuery.of(context).size.width / 2),
             ValueListenableBuilder(
               valueListenable: isDarkModeNotifier,
               builder: (context, darkMode, child) {

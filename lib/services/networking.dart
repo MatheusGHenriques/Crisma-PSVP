@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:crisma/services/notifications.dart';
+
 import '/main.dart';
 import '/data/poll.dart';
 import '/data/notifiers.dart';
@@ -11,7 +13,7 @@ import '/data/message.dart';
 import '/data/pdf.dart';
 import '/data/task.dart';
 
-class PeerToPeerTcpNetworking {
+class PeerToPeerNetworking {
   static const int port = 64128;
   ServerSocket? _serverSocket;
   RawDatagramSocket? _udpSocket;
@@ -30,7 +32,12 @@ class PeerToPeerTcpNetworking {
   late Set<Task> _taskBoxTasks;
   late Set<Pdf> _pdfBoxPdfs;
 
+  late Notifications _notifications;
+
   Future<void> start() async {
+    _notifications = Notifications();
+    _notifications.initNotifications();
+
     _chatBoxMessages = chatBox.values.cast<Message>().toSet();
     _taskBoxTasks = taskBox.values.whereType<Task>().cast<Task>().toSet();
     _taskBoxPolls = taskBox.values.whereType<Poll>().cast<Poll>().toSet();
@@ -309,6 +316,7 @@ class PeerToPeerTcpNetworking {
     }
     if (ChatPage.userHasMessageTags(message) && message.sender != userName && !message.readBy.contains(userName)) {
       unreadMessagesNotifier.value++;
+      _notifications.newNotification(message);
     }
     await chatBox.add(message);
     await message.save();
@@ -328,17 +336,16 @@ class PeerToPeerTcpNetworking {
     }
     await taskBox.add(task);
     await task.save();
-    _checkAndUpdateNewTasksNotifier(task);
+    if (TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0 && task.sender != userName) {
+      newTasksNotifier.value++;
+      _notifications.newNotification(task);
+    }
     _sendTask(task);
   }
 
   bool _shouldReplaceTask(Task newTask, Task existingTask) {
     return newTask.numberOfPersons < existingTask.numberOfPersons ||
         (newTask.persons.isNotEmpty && existingTask.persons.isNotEmpty && newTask.persons != existingTask.persons);
-  }
-
-  void _checkAndUpdateNewTasksNotifier(Task task) {
-    if (TasksPage.userHasTaskTags(task) && task.numberOfPersons > 0) newTasksNotifier.value++;
   }
 
   void addPollToTaskBox(Poll poll) async {
@@ -355,7 +362,10 @@ class PeerToPeerTcpNetworking {
     await taskBox.add(poll);
     await poll.save();
     _sendPoll(poll);
-    _checkAndUpdateNewPollNotifier(poll);
+    if (TasksPage.userHasPollTags(poll) && poll.sender != userName && !poll.votes.values.any((voters) => voters.contains(userName))) {
+      newPollsNotifier.value++;
+      _notifications.newNotification(poll);
+    }
   }
 
   bool _shouldReplacePoll(Poll newPoll, Poll existingPoll) {
@@ -377,24 +387,22 @@ class PeerToPeerTcpNetworking {
     return newPollVotes > existingPollVotes;
   }
 
-  void _checkAndUpdateNewPollNotifier(Poll poll) {
-    if (TasksPage.userHasPollTags(poll) && !poll.votes.values.any((voters) => voters.contains(userName))) {
-      newTasksNotifier.value++;
-    }
-  }
-
   void addPdfToPdfBox(Pdf pdf) async {
-    if(_pdfBoxPdfs.contains(pdf)) return;
+    if (_pdfBoxPdfs.contains(pdf)) return;
     _pdfBoxPdfs.add(pdf);
-    if(pdf.type == 'Cronograma') {
+    if (pdf.type == 'Cronograma') {
       if (pdfBox.isEmpty || await pdfBox.get("pdf").time.isBefore(pdf.time)) {
         await pdfBox.put("pdf", pdf);
         updatedScheduleNotifier.value = true;
         _sendPdf(pdf);
       }
-    }else{
+    } else {
       await pdfBox.add(pdf);
       _sendPdf(pdf);
+      if (userTags['Música']!) {
+        newCiphersNotifier.value++;
+        _notifications.newNotification(pdf);
+      }
     }
   }
 }

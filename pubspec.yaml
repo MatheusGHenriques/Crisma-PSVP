@@ -30,9 +30,10 @@ environment:
 dependencies:
   collection: ^1.19.1
   convert: ^3.1.2
-  file_picker: ^9.2.1
+  file_picker: ^9.2.3
   flutter:
     sdk: flutter
+  flutter_local_notifications: ^19.1.0
   flutter_pdfview: ^1.4.0
   google_nav_bar: ^5.0.7
   hive_ce: ^2.10.1

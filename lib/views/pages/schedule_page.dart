@@ -102,6 +102,14 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updatedScheduleNotifier.value = false;
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {

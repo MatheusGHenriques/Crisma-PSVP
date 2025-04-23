@@ -48,6 +48,15 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      newTasksNotifier.value = 0;
+      newPollsNotifier.value = 0;
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
