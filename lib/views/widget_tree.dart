@@ -1,6 +1,6 @@
-import 'package:crisma/main.dart';
-
-import '/services/networking.dart';
+import '/services/networking/data_sync_handler.dart';
+import '/main.dart';
+import '/services/networking/network_manager.dart';
 import '/data/user_info.dart';
 import '/views/pages/music_page.dart';
 import 'package:flutter/material.dart';

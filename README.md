@@ -2,9 +2,9 @@
 
 Instagram: [@crismapsvp](https://instagram.com/crismapsvp)
 
-Durante o retiro de Crisma da Paróquia São Vicente de Paulo de Belo Horizonte, a comunicação entre líderes e participantes dependia de rádios comunicadores — equipamentos limitados em quantidade, que exigiam que as pessoas permanecessem próximas a um dos rádios para ouvir as mensagens, e que permitiam a comunicação direta de apenas alguns membros da equipe.
+Durante o retiro de Crisma da Paróquia São Vicente de Paulo de Belo Horizonte, a comunicação entre líderes e participantes dependia de rádios comunicadores - equipamentos limitados em quantidade, que exigiam que as pessoas permanecessem próximas a um dos rádios para ouvir as mensagens, e que permitiam a comunicação direta de apenas alguns membros da equipe.
 
-O app **Crisma PSVP** busca resolver essa limitação: um app para múltiplos dispositivos que utiliza uma rede local Wi-Fi para oferecer comunicação fluida e em tempo real, permitindo a troca de mensagens, tarefas, enquetes e PDFs sem depender de conexão com a internet, estando disponível a todos os membros da equipe, em seus próprios smartphones ou computadores.
+O app **Crisma PSVP** busca resolver essa limitação: um app para múltiplos dispositivos que utiliza uma rede local Wi-Fi para oferecer comunicação fluida, segura e em tempo real, permitindo a troca de mensagens, tarefas, enquetes e PDFs sem depender de conexão com a internet, estando disponível a todos os membros da equipe, em seus próprios smartphones ou computadores.
 
 ## Imagens
 
@@ -23,56 +23,59 @@ O app **Crisma PSVP** busca resolver essa limitação: um app para múltiplos di
 
 ## Funcionalidades
 
-- **Comunicação via rede local**
-  - Permite envio de mensagens e comunicação em rede local, sem necessidade de internet.
-  - Descoberta de outros usuários na rede via broadcast utilizando o protocolo UDP.
-  - Conexão via TCP para envio confiável de mensagens, tarefas, enquetes e PDFs.
-  - Reconexão automática e remoção de peers inativos.
-  - Indicador em tempo real do número de usuários (peers) conectados.
+- **Comunicação totalmente offline por rede local (LAN/Wi-Fi)**
+  - Envio de mensagens, tarefas, enquetes e PDFs sem depender de internet.
+  - Descoberta automática de usuários via broadcast UDP.
+  - Conexões seguras via TCP para troca confiável de dados.
+  - Reconexão automática e remoção de usuários inativos.
+  - Exibição em tempo real do número de usuários conectados.
 
-- **Login e autenticação de grupos**
-  - Cada usuário pode se autenticar com seu nome.
-  - Para acessar um grupo, o usuário deve digitar uma senha exclusiva daquele grupo, garantindo a segurança e a exclusividade do acesso.
-  - Botão de logout para trocar de usuário/grupo sem reiniciar o app.
+- **Acesso seguro por grupos com autenticação**
+  - Login com nome personalizado e senha exclusiva para cada grupo.
+  - Derivação de chave segura (256 bits) com Argon2id a partir da senha do grupo. (A ser implementado)
+  - Armazenamento criptografado da chave no Secure Storage, com persistência entre sessões. (A ser implementado)
+  - Opção de logout para alternar facilmente entre usuários ou grupos.
 
-- **Mensagens organizadas por grupo e tags**
-  - As mensagens são separadas por tags, permitindo organização clara e eficiente da comunicação.
-  - Confirmação de leitura: cada mensagem mostra quem já a visualizou.
-  - Opção de deletar para todos usuários mensagens enviadas manualmente.
-  - Notificações locais para novas mensagens.
+- **Mensagens organizadas e criptografadas**
+  - Mensagens destinadas para cada grupo com seleção por tags, para facilitar a comunicação.
+  - Criptografia de conteúdo exclusiva por grupo. (A ser implementado)
+  - Confirmação de leitura individual e opção de apagar mensagens para todos.
+  - Notificações locais e alerta no painel inicial para mensagens novas.
 
-- **Gerenciamento de tarefas**
-  - Os usuários podem criar, aceitar e concluir tarefas.
-  - As tarefas são também organizadas por tags.
-  - Expiração automática: tarefas com mais de 24h são removidas ao iniciar o app.
-  - Dashboard na Home exibe contador de tarefas pendentes.
-  - Notificações locais para novas tarefas.
+- **Proteção e privacidade**
+  - Canal de comunicação cifrado com ECDH (X25519) + AES-GCM para sigilo e integridade.
+  - Armazenamento local de mensagens criptografado (Hive). (A ser implementado)
+  - Desbloqueio do app com PIN ou biometria, como medida de proteção extra. (A ser implementado)
 
-- **Gerenciamento de enquetes**
-  - Os usuários podem criar e votar em enquetes.
-  - Suporte a respostas customizadas e voto único por dispositivo.
-  - Organização por tags e dashboard com contador de enquetes ativas.
-  - Expiração automática: enquetes com mais de 24h são removidas ao iniciar o app.
-  - Notificações locais para novas enquetes.
+- **Gestão colaborativa de tarefas**
+  - Membros podem criar, aceitar, concluir e excluir tarefas, destinadas para cada grupo com seleção por tags.
+  - Expiração automática após 24h.
+  - Painel com contador de tarefas disponíveis e pendentes.
+  - Notificações locais e alerta no painel inicial para tarefas novas.
 
-- **Cronograma em PDF**
-  - Visualização do cronograma atualizado em formato PDF.
-  - Possibilidade de atualizar o cronograma diretamente pelo aplicativo (upload em rede local).
-  - Notificação local quando um novo cronograma é recebido.
+- **Criação e votação em enquetes**
+  - Enquetes com respostas personalizadas ou fixas, e voto único por dispositivo.
+  - Destinadas para cada grupo com seleção por tags. e expiração automática após 24h.
+  - Notificações locais para enquetes novas e painel com enquetes disponíveis.
 
-- **Envio de novos PDFs (Grupo da Música)**
-  - Página exclusiva para o grupo de música adicionar novos PDFs de cifras.
-  - Sincronização automática de cifras entre os peers.
+- **Compartilhamento e visualização de cronograma**
+  - Visualização do cronograma em PDF dentro do app, com modo claro e escuro.
+  - Upload e atualização do cronograma pela rede local.
+  - Notificação automática local ao receber um novo cronograma.
 
-- **Temas de cor**
-  - Disponibilidade de 3 temas de cor, cada um com versões claras e escuras.
-  - Botão para alternar tema e troca em tempo real.
-  - Lotties customizadas para cada tema.
+- **Cifras musicais em grupo específico**
+  - Página dedicada ao envio de PDFs de cifras para o grupo da música.
+  - Sincronização automática entre os usuários, com notificações locais.
+
+- **Aparência personalizada**
+  - Três temas de cor disponíveis, cada um com versão clara e escura.
+  - Alternância de tema em tempo real.
+  - Animações Lottie personalizadas de acordo com o tema ativo.
 
 ## Segurança e Criptografia
 
-O app **Crisma PSVP** evoluirá para oferecer comunicação segura entre os membros, mesmo em ambientes totalmente offline, por meio de criptografia ponta a ponta baseada em senha de grupo.  
-As etapas planejadas para a implementação da segurança são:
+O app **Crisma PSVP** está evoluindo para oferecer comunicação segura entre os membros, mesmo em ambientes totalmente offline, por meio de criptografia ponta a ponta baseada em senha de grupo.  
+As novas funções de segurança serão:
 
 - **Derivação de chave a partir da senha do grupo**  
   Será utilizado o algoritmo **Argon2id** (Password-Hashing Competition winner) para derivar, de forma segura, uma chave de 256 bits a partir da senha compartilhada de cada grupo, usando um *salt* fixo embutido no app.  
@@ -83,19 +86,16 @@ As etapas planejadas para a implementação da segurança são:
 - **Criptografia e descriptografia de mensagens**  
   Cada mensagem será cifrada com uma **contentKey** aleatória, usando **AES-GCM (Advanced Encryption Standard no modo Galois/Counter Mode)**, garantindo confidencialidade e integridade.  
   Em seguida, essa `contentKey` será “envelopada” (cifrada) com cada `groupKey` dos grupos destinatários (multi-wrap).  
-  Apenas peers que possuírem a `groupKey` correta conseguirão decifrar a `contentKey` e, depois, o conteúdo da mensagem.
+  Apenas usuários que possuírem a `groupKey` correta conseguirão decifrar a `contentKey` e, depois, o conteúdo da mensagem.
 
 - **Segurança no canal de comunicação (conexão TCP ponto a ponto)**  
-  Toda conexão TCP fará um handshake via **ECDH (Elliptic Curve Diffie-Hellman)** sobre curva P-256 para gerar uma chave de sessão efêmera.  
+  Toda conexão TCP fará um handshake via **ECDH (Elliptic Curve Diffie-Hellman)** sobre curva X25519 para gerar uma chave de sessão efêmera.  
   Após o handshake, o canal será cifrado com **AES-GCM**, garantindo sigilo, integridade e *forward secrecy* em todas as trocas de pacotes.
 
 - **Armazenamento seguro e sincronização offline**  
-  Todas as mensagens recebidas serão armazenadas no banco **Hive** **sempre cifradas**, exatamente como vieram do peer.  
+  Todas as mensagens recebidas serão armazenadas no banco de dados local Hive, com seu conteúdo **sempre cifrado**.  
   A descriptografia só ocorrerá no momento da exibição, e somente se o usuário tiver a `groupKey` correspondente ao grupo daquela mensagem.  
   O sistema operará **sem depender de internet ou servidores externos**, usando UDP para descoberta e TCP para dados na rede local.
-
-- **Proteção de configuração e integridade do app**  
-  Os arquivos de configuração que contêm *salt* e *hash* de validação serão protegidos por um HMAC, cuja chave será mantida no Secure Storage, evitando adulterações.
 
 - **Proteção do dispositivo e controle de acesso**  
   Em dispositivos roteados (root) ou jailbroken, o Secure Storage pode ser comprometido.  
@@ -111,7 +111,7 @@ Com essa arquitetura em camadas, o **Crisma PSVP** garantirá confidencialidade,
 
 - **hive_ce e hive_ce_flutter**: Bancos de dados locais para armazenamento eficiente.
 - **flutter_secure_storage**: Acesso ao Secure Storage (Android Keystore e iOS Keychain).
-- **cryptography e cryptography_flutter**: Algoritmos de criptografia e derivação de chave, com implementações nativas.
+- **cryptography_plus e cryptography_flutter_plus**: Algoritmos de criptografia e derivação de chave, com implementações nativas.
 - **flutter_pdfview**: Para visualização de arquivos PDF.
 - **file_picker**: Para seleção e upload de novos PDFs.
 - **flutter_local_notifications**: Para notificações locais.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '/services/networking.dart';
+import '/services/networking/network_manager.dart';
 import '/data/custom_themes.dart';
 import '/data/notifiers.dart';
 import '/main.dart';
@@ -60,11 +60,11 @@ class HomePage extends StatelessWidget {
                                                 spacing: 5,
                                                 crossAxisAlignment: WrapCrossAlignment.center,
                                                 alignment: WrapAlignment.center,
-                                                children: List.generate(tcpNetworking.socketDeviceNames.length, (
-                                                  index,
-                                                ) {
+                                                children: List.generate(tcpNetworking.connectedPeers.length, (index) {
                                                   return HomeInfoWidget(
-                                                    title: tcpNetworking.socketDeviceNames.values.elementAt(index),
+                                                    title:
+                                                        tcpNetworking.connectedPeers.values.elementAt(index) ??
+                                                        'Não identificado',
                                                     description: "Conectado",
                                                     icon: Icons.check_circle_rounded,
                                                   );

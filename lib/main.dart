@@ -1,10 +1,10 @@
-import 'package:crisma/data/poll.dart';
-import 'package:crisma/data/task.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
+import '/data/poll.dart';
+import '/data/task.dart';
 import 'data/custom_themes.dart';
 import 'data/message.dart';
-import 'hive/hive_adapters.dart';
+import '/services/storage/hive/hive_adapters.dart';
 import 'views/pages/login_page.dart';
 import 'views/widget_tree.dart';
 import 'data/notifiers.dart';
