@@ -1,4 +1,6 @@
 import 'dart:async';
+import '/services/cryptography/argon2_manager.dart';
+import '/views/widgets/loading_filled_button.dart';
 import 'package:flutter/material.dart';
 import '/main.dart';
 import '/data/custom_themes.dart';
@@ -17,17 +19,6 @@ class TagButtonWidget extends StatefulWidget {
 
 class _TagButtonWidgetState extends State<TagButtonWidget> {
   bool active = false;
-
-  static const Map<String, String> groupPasswords = {
-    'Coordenação': 'saoPedro',
-    'Música': 'santaCecilia',
-    'Suporte': 'santoExpedido',
-    'Animação': 'saoJoaoBosco',
-    'Cozinha': 'saoLourenco',
-    'Mídias': 'saoMaximiliano',
-    'Homens': 'saoJose',
-    'Mulheres': 'santaMaria',
-  };
 
   Future<bool> checkGroupPassword() async {
     TextEditingController controller = TextEditingController();
@@ -56,19 +47,18 @@ class _TagButtonWidgetState extends State<TagButtonWidget> {
                   ValueListenableBuilder(
                     valueListenable: buttonEnabledNotifier,
                     builder: (context, buttonEnabled, child) {
-                      return FilledButton(
-                        onPressed:
-                            buttonEnabled
-                                ? () {
-                                  if (controller.text == groupPasswords[widget.text]) {
-                                    completer.complete(true);
-                                  } else {
-                                    completer.complete(false);
-                                  }
-                                  Navigator.pop(context);
-                                }
-                                : null,
-                        child: const Text('Entrar'),
+                      return LoadingFilledButton(
+                        label: 'Entrar',
+                        onPressed: () async {
+                          if (await Argon2Manager.checkGroupPassword(controller.text, widget.text)) {
+                            completer.complete(true);
+                          } else {
+                            completer.complete(false);
+                          }
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                        },
                       );
                     },
                   ),

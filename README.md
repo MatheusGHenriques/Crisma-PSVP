@@ -32,8 +32,8 @@ O app **Crisma PSVP** busca resolver essa limitação: um app para múltiplos di
 
 - **Acesso seguro por grupos com autenticação**
   - Login com nome personalizado e senha exclusiva para cada grupo.
-  - Derivação de chave segura (256 bits) com Argon2id a partir da senha do grupo. (A ser implementado)
-  - Armazenamento criptografado da chave no Secure Storage, com persistência entre sessões. (A ser implementado)
+  - Derivação de chave segura (256 bits) com Argon2id a partir da senha do grupo.
+  - Armazenamento criptografado da chave no Secure Storage, com persistência entre sessões.
   - Opção de logout para alternar facilmente entre usuários ou grupos.
 
 - **Mensagens organizadas e criptografadas**
