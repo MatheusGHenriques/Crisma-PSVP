@@ -2,9 +2,9 @@
 
 Instagram: [@crismapsvp](https://instagram.com/crismapsvp)
 
-Durante o retiro de Crisma da Paróquia São Vicente de Paulo de Belo Horizonte, a comunicação entre líderes e participantes dependia de rádios comunicadores - equipamentos limitados em quantidade, que exigiam que as pessoas permanecessem próximas a um dos rádios para ouvir as mensagens, e que permitiam a comunicação direta de apenas alguns membros da equipe.
+Durante o retiro de Crisma da Paróquia São Vicente de Paulo de Belo Horizonte, a comunicação entre organizadores dependia de rádios comunicadores - equipamentos limitados em quantidade, que exigiam que as pessoas permanecessem próximas a um dos rádios para ouvir as mensagens, e que permitiam a comunicação direta de apenas alguns membros da equipe.
 
-O app **Crisma PSVP** busca resolver essa limitação: um app para múltiplos dispositivos que utiliza uma rede local Wi-Fi para oferecer comunicação fluida, segura e em tempo real, permitindo a troca de mensagens, tarefas, enquetes e PDFs sem depender de conexão com a internet, estando disponível a todos os membros da equipe, em seus próprios smartphones ou computadores.
+O app **Crisma PSVP** busca resolver essa limitação: um app para múltiplos dispositivos que utiliza uma rede local Wi-Fi para oferecer comunicação fluida, segura e em tempo real, permitindo a troca de mensagens, tarefas, enquetes e PDFs sem depender de conexão com a internet, disponível a todos os membros da equipe, em seus próprios smartphones ou computadores.
 
 ## Imagens
 
@@ -44,7 +44,7 @@ O app **Crisma PSVP** busca resolver essa limitação: um app para múltiplos di
 
 - **Proteção e privacidade**
   - Canal de comunicação cifrado com ECDH (X25519) + AES-GCM para sigilo e integridade.
-  - Armazenamento local de mensagens criptografado (Hive). (A ser implementado)
+  - Armazenamento local de  mensagens criptografado (Hive). (A ser implementado)
   - Desbloqueio do app com PIN ou biometria, como medida de proteção extra. (A ser implementado)
 
 - **Gestão colaborativa de tarefas**

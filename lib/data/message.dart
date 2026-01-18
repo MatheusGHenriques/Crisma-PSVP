@@ -2,23 +2,23 @@ import 'package:hive_ce/hive.dart';
 import 'package:collection/collection.dart';
 
 class Message extends HiveObject {
-  late Map<String, bool> tags;
   late String sender;
   late String text;
   late List<String> readBy;
   late DateTime time;
+  late Map<String, String> encryptedAesKey;
 
   Message({
-    required this.tags,
+    required this.encryptedAesKey,
     required this.sender,
     required this.text,
     List<String>? readBy,
     DateTime? time,
-  })  : readBy = readBy ?? [],
-        time = (time ?? DateTime.now()).copyWith(microsecond: 0);
+  }) : readBy = readBy ?? [],
+       time = (time ?? DateTime.now()).copyWith(microsecond: 0);
 
   Map<String, dynamic> toJson() => {
-    'tags': tags,
+    'encryptedAesKey': encryptedAesKey,
     'sender': sender,
     'text': text,
     'readBy': readBy,
@@ -26,17 +26,14 @@ class Message extends HiveObject {
   };
 
   static Message fromJson(Map<String, dynamic> json) => Message(
-    tags: Map<String, bool>.from(json['tags']),
+    encryptedAesKey: Map<String, String>.from(json['encryptedAesKey']),
     sender: json['sender'],
     text: json['text'],
     readBy: List<String>.from(json['readBy'] ?? []),
     time: DateTime.parse(json['time']),
   );
 
-  bool compare(Message other) =>
-      sender == other.sender &&
-          text == other.text &&
-          time == other.time;
+  bool compare(Message other) => sender == other.sender && text == other.text && time == other.time;
 
   @override
   bool operator ==(Object other) {
@@ -46,7 +43,7 @@ class Message extends HiveObject {
     return sender == other.sender &&
         text == other.text &&
         time == other.time &&
-        const DeepCollectionEquality().equals(tags, other.tags) &&
+        const DeepCollectionEquality().equals(encryptedAesKey, other.encryptedAesKey) &&
         const ListEquality().equals(readBy, other.readBy);
   }
 
@@ -55,7 +52,7 @@ class Message extends HiveObject {
     sender,
     text,
     time,
-    const DeepCollectionEquality().hash(tags),
+    const DeepCollectionEquality().hash(encryptedAesKey),
     const ListEquality().hash(readBy),
   );
 }

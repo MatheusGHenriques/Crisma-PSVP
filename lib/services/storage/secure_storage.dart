@@ -3,11 +3,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class SecureStorage {
   static final storage = FlutterSecureStorage();
 
-  static saveGroupKey(String group, String key) async {
+  static Future<void> saveGroupKey(String group, String key) async {
     await storage.write(key: group, value: key);
   }
 
-  static userLogout() async {
+  static Future<void> userLogout() async {
     await storage.deleteAll();
   }
 

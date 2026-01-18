@@ -13,7 +13,8 @@ extension DataSyncHandler on PeerToPeerNetworking {
   void addMessageToChatBox(Message message) async {
     if (chatBoxMessages.add(message)) {
       for (Message boxMessage in chatBox.values) {
-        if (message.compare(boxMessage) && (message.readBy.length > boxMessage.readBy.length || message.tags.isEmpty)) {
+        if (message.compare(boxMessage) &&
+            (message.readBy.length > boxMessage.readBy.length || message.encryptedAesKey.isEmpty)) {
           if (!message.readBy.contains(userName)) unreadMessagesNotifier.value--;
           boxMessage.delete();
           break;
@@ -67,7 +68,7 @@ extension DataSyncHandler on PeerToPeerNetworking {
       await taskBox.add(poll);
       await poll.save();
       sendPoll(poll);
-      if (TasksPage.userHasPollTags(poll) &&
+      if (TasksPage.userHasTaskTags(poll) &&
           poll.sender != userName &&
           !poll.votes.values.any((voters) => voters.contains(userName))) {
         newPollsNotifier.value++;
@@ -77,16 +78,9 @@ extension DataSyncHandler on PeerToPeerNetworking {
   }
 
   bool shouldReplacePoll(Poll newPoll, Poll existingPoll) {
-    if (newPoll.votes.keys.length > existingPoll.votes.keys.length || noTagsInPoll(newPoll)) return true;
+    if (newPoll.votes.keys.length > existingPoll.votes.keys.length || newPoll.encryptedAesKey.isEmpty) return true;
     if (newPoll.votes.keys.length == existingPoll.votes.keys.length) return hasMoreVotes(newPoll, existingPoll);
     return false;
-  }
-
-  bool noTagsInPoll(Poll poll) {
-    for (bool tag in poll.tags.values) {
-      if (tag) return false;
-    }
-    return true;
   }
 
   bool hasMoreVotes(Poll newPoll, Poll existingPoll) {

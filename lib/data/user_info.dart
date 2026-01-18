@@ -1,4 +1,6 @@
-late String userName;
+String? userName;
+const String generalPassword = 'JesusCristo';
+String? userId;
 
 Map<String, bool> userTags = {
   "Geral": true,

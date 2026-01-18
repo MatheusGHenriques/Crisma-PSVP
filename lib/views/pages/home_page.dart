@@ -25,13 +25,27 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: 10,
                 children: [
-                  Lottie.asset(CustomThemes.lottie(colorTheme), width: MediaQuery.of(context).size.width / 2),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Lottie.asset(
+                        CustomThemes.lottie(colorThemeNotifier.value),
+                        width: responsiveWidth(constraints) / 1.3,
+                      );
+                    },
+                  ),
                   ValueListenableBuilder(
                     valueListenable: isDarkModeNotifier,
                     builder: (context, darkMode, child) {
-                      return Image.asset(
-                        CustomThemes.image(colorTheme, darkMode),
-                        width: MediaQuery.of(context).size.width / 2,
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Image.asset(
+                            CustomThemes.image(
+                              colorThemeNotifier.value,
+                              darkMode,
+                            ),
+                            width: responsiveWidth(constraints) / 1.3,
+                          );
+                        },
                       );
                     },
                   ),
@@ -53,22 +67,40 @@ class HomePage extends StatelessWidget {
                                         context: context,
                                         builder: (context) {
                                           return Dialog(
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(25),
+                                            ),
                                             child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
                                               child: Wrap(
                                                 spacing: 5,
-                                                crossAxisAlignment: WrapCrossAlignment.center,
+                                                crossAxisAlignment:
+                                                    WrapCrossAlignment.center,
                                                 alignment: WrapAlignment.center,
-                                                children: List.generate(tcpNetworking.connectedPeers.length, (index) {
-                                                  return HomeInfoWidget(
-                                                    title:
-                                                        tcpNetworking.connectedPeers.values.elementAt(index) ??
-                                                        'Não identificado',
-                                                    description: "Conectado",
-                                                    icon: Icons.check_circle_rounded,
-                                                  );
-                                                }),
+                                                children: List.generate(
+                                                  tcpNetworking
+                                                      .connectedPeers
+                                                      .length,
+                                                  (index) {
+                                                    return HomeInfoWidget(
+                                                      title:
+                                                          tcpNetworking
+                                                              .connectedPeers
+                                                              .values
+                                                              .elementAt(
+                                                                index,
+                                                              ) ??
+                                                          'Não identificado',
+                                                      description: "Conectado",
+                                                      icon:
+                                                          Icons
+                                                              .check_circle_rounded,
+                                                    );
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           );
@@ -79,7 +111,9 @@ class HomePage extends StatelessWidget {
                                     ? () async {
                                       enabledConnectionsButton = false;
                                       tcpNetworking.restart();
-                                      await Future.delayed(Duration(seconds: 5));
+                                      await Future.delayed(
+                                        Duration(seconds: 5),
+                                      );
                                       enabledConnectionsButton = true;
                                     }
                                     : null,
@@ -102,7 +136,8 @@ class HomePage extends StatelessWidget {
                             },
                             child: HomeInfoWidget(
                               title: "Novas Mensagens",
-                              description: unreadMessages > 0 ? "+$unreadMessages" : "0",
+                              description:
+                                  unreadMessages > 0 ? "+$unreadMessages" : "0",
                               icon: Icons.message_rounded,
                             ),
                           );
@@ -142,7 +177,8 @@ class HomePage extends StatelessWidget {
                             },
                             child: HomeInfoWidget(
                               title: "Cronograma",
-                              description: updatedSchedule ? "Atualizado!" : "Ver",
+                              description:
+                                  updatedSchedule ? "Atualizado!" : "Ver",
                               icon: Icons.schedule_rounded,
                             ),
                           );

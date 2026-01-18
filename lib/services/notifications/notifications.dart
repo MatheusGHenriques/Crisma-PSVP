@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:crisma/services/cryptography/aes_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '/data/notifiers.dart';
@@ -41,7 +42,8 @@ class Notifications {
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     final iosInit = DarwinInitializationSettings();
-    await _plugin.initialize(InitializationSettings(android: androidInit, iOS: iosInit));
+    final linuxInit =  LinuxInitializationSettings(defaultActionName: 'Crisma', defaultIcon: AssetsLinuxIcon('@mipmap/ic_launcher'));
+    await _plugin.initialize(InitializationSettings(android: androidInit, iOS: iosInit, linux: linuxInit));
 
     unreadMessagesNotifier.addListener(() {
       if (unreadMessagesNotifier.value == 0) {
@@ -119,12 +121,15 @@ class Notifications {
     }
   }
 
-  void newNotification(dynamic message) {
+  Future<void> newNotification(dynamic message) async {
     if (message is data.Message) {
+      message = await AesManager.decryptMessage(message);
       _notify(unreadMessagesNotifier, 'Mensagens', 'Mensagem', '${message.sender}: ${message.text}', 1);
     } else if (message is Task) {
+      message = await AesManager.decryptTask(message);
       _notify(newTasksNotifier, 'Tarefas', 'Tarefa', '${message.sender}: ${message.description}', 2);
     } else if (message is Poll) {
+      message = await AesManager.decryptPoll(message);
       _notify(newPollsNotifier, 'Enquetes', 'Enquete', '${message.sender}: ${message.description}', 3);
     } else if (message is Pdf) {
       _notify(newCiphersNotifier, 'Cifras', 'Cifra', '${message.type}: ${message.title}', 5);

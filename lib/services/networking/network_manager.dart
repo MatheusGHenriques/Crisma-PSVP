@@ -48,8 +48,9 @@ class PeerToPeerNetworking {
     serverSocket = await ServerSocket.bind(InternetAddress.anyIPv4, port, shared: true);
     serverSocket?.listen(handleIncomingConnection);
     await startUdp();
-    sendUdpDiscoveryRequest();
-    startHeartbeat();
+    Future.delayed(Duration(milliseconds: 200), () {
+      startHeartbeat();
+    },);
   }
 
   Future<void> dispose() async {

@@ -8,48 +8,69 @@ class HomeInfoWidget extends StatelessWidget {
   final String description;
   final IconData icon;
 
-  const HomeInfoWidget({super.key, required this.title, required this.description, required this.icon});
+  const HomeInfoWidget({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: isDarkModeNotifier,
       builder: (context, isDarkMode, child) {
-        return Container(
-          padding: const EdgeInsets.all(12),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 2.5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(25)),
-            color:
-                isDarkMode
-                    ? CustomThemes.darkBackgroundColor(colorTheme)
-                    : CustomThemes.lightBackgroundColor(colorTheme),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 5,
-            children: [
-              Text(
-                title,
-                style: TextStyle(color: CustomThemes.mainColor(colorTheme), fontWeight: FontWeight.bold, fontSize: 14),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return Container(
+              padding: const EdgeInsets.all(12),
+              constraints: BoxConstraints(
+                maxWidth: responsiveWidth(constraints) / 2,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(25)),
+                color:
+                    isDarkMode
+                        ? CustomThemes.darkBackgroundColor(
+                          colorThemeNotifier.value,
+                        )
+                        : CustomThemes.lightBackgroundColor(
+                          colorThemeNotifier.value,
+                        ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: 5,
                 children: [
-                  Icon(icon),
                   Text(
-                    description,
+                    title,
                     style: TextStyle(
-                      fontSize: 14,
+                      color: CustomThemes.mainColor(colorThemeNotifier.value),
                       fontWeight: FontWeight.bold,
-                      color: CustomThemes.secondaryDarkColor(colorTheme),
+                      fontSize: 14,
                     ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 5,
+                    children: [
+                      Icon(icon),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: CustomThemes.secondaryDarkColor(
+                            colorThemeNotifier.value,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

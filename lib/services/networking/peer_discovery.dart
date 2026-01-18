@@ -33,7 +33,7 @@ extension PeerDiscovery on PeerToPeerNetworking {
       return;
     }
 
-    if (userName.compareTo(remoteName) < 0) {
+    if (userName!.compareTo(remoteName) < 0) {
       connectToPeer(peerIp);
     }
   }

@@ -1,3 +1,4 @@
+import '/services/cryptography/aes_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import '/data/custom_themes.dart';
@@ -14,11 +15,14 @@ class ChatPage extends StatefulWidget {
   const ChatPage({super.key, required this.onSendMessage});
 
   static bool userHasMessageTags(Message message) {
-    if (message.sender == userName) {
+    if (message.encryptedAesKey.containsKey(userId)) {
       return true;
     }
-    for (String tag in message.tags.keys) {
-      if (message.tags[tag]! && userTags[tag]!) {
+    for (String tag in message.encryptedAesKey.keys) {
+      if (userTags[tag] == null) {
+        continue;
+      }
+      if (userTags[tag]!) {
         return true;
       }
     }
@@ -63,9 +67,15 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void sendButtonClicked() {
+  Future<void> sendButtonClicked() async {
     Map<String, bool> newTags = Map<String, bool>.from(selectedTags);
-    Message messageToSend = Message(tags: newTags, sender: userName, text: _sendMessageController.text.trim());
+    final encryptedAesKey = await AesManager.createEncryptedAesKey(newTags);
+    Message messageToSend = Message(
+      encryptedAesKey: encryptedAesKey,
+      sender: userName!,
+      text: _sendMessageController.text.trim(),
+    );
+    messageToSend = await AesManager.encryptMessage(messageToSend);
     widget.onSendMessage(messageToSend);
     _sendMessageController.clear();
   }
@@ -80,19 +90,22 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   bool _messageHasUserTags(Message message) {
-    for (String key in message.tags.keys) {
-      if (message.tags[key]! && userTags[key]!) return true;
+    for (String key in message.encryptedAesKey.keys) {
+      if (userTags[key] == null) continue;
+      if (userTags[key]!) return true;
     }
     return false;
   }
 
   void _readMessages() {
     for (Message boxMessage in chatBox.values) {
-      if (boxMessage.sender != userName && !boxMessage.readBy.contains(userName) && _messageHasUserTags(boxMessage)) {
+      if (boxMessage.sender != userName &&
+          !boxMessage.readBy.contains(userName) &&
+          _messageHasUserTags(boxMessage)) {
         List<String> readBy = List.from(boxMessage.readBy);
-        readBy.add(userName);
+        readBy.add(userName!);
         Message messageToSend = Message(
-          tags: boxMessage.tags,
+          encryptedAesKey: boxMessage.encryptedAesKey,
           sender: boxMessage.sender,
           text: boxMessage.text,
           readBy: readBy,
@@ -122,17 +135,26 @@ class _ChatPageState extends State<ChatPage> {
                       valueListenable: chatBox.listenable(),
                       builder: (context, box, child) {
                         _readMessages();
-                        List<Message> messages = box.values.cast<Message>().toList();
+                        List<Message> messages =
+                            box.values.cast<Message>().toList();
                         messages.sort((a, b) => a.time.compareTo(b.time));
-
                         messages.removeWhere((element) {
-                          return !ChatPage.userHasMessageTags(element) || element.tags.isEmpty;
+                          return !ChatPage.userHasMessageTags(element);
                         });
-                        int newMessagesIndicatorPosition = messages.length - unreadMessagesNotifier.value;
-                        return unreadMessagesNotifier.value > 0 && messages.isNotEmpty
+                        int newMessagesIndicatorPosition =
+                            messages.length - unreadMessagesNotifier.value;
+                        return unreadMessagesNotifier.value > 0 &&
+                                messages.isNotEmpty
                             ? Column(
                               spacing: 5,
-                              children: List.generate(messages.length + 1, (index) {
+                              children: List.generate(messages.length + 1, (
+                                index,
+                              ) {
+                                final message = messages.elementAt(
+                                  newMessagesIndicatorPosition < index
+                                      ? index - 1
+                                      : index,
+                                );
                                 return newMessagesIndicatorPosition == index
                                     ? const Row(
                                       children: [
@@ -141,13 +163,8 @@ class _ChatPageState extends State<ChatPage> {
                                         Expanded(child: Divider(thickness: 2)),
                                       ],
                                     )
-                                    : newMessagesIndicatorPosition < index
-                                    ? MessageWidget(
-                                      message: messages.elementAt(index - 1),
-                                      onSendMessage: widget.onSendMessage,
-                                    )
                                     : MessageWidget(
-                                      message: messages.elementAt(index),
+                                      message: message,
                                       onSendMessage: widget.onSendMessage,
                                     );
                               }),
@@ -180,10 +197,14 @@ class _ChatPageState extends State<ChatPage> {
                               context: context,
                               builder: (context) {
                                 return Dialog(
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
-                                    child: TagSelectionWidget(tags: selectedTags),
+                                    child: TagSelectionWidget(
+                                      tags: selectedTags,
+                                    ),
                                   ),
                                 );
                               },
@@ -193,7 +214,11 @@ class _ChatPageState extends State<ChatPage> {
                           style: ButtonStyle(
                             backgroundColor:
                                 selectedTagsNumber > 0
-                                    ? WidgetStatePropertyAll(CustomThemes.mainColor(colorTheme))
+                                    ? WidgetStatePropertyAll(
+                                      CustomThemes.mainColor(
+                                        colorThemeNotifier.value,
+                                      ),
+                                    )
                                     : null,
                           ),
                         );
@@ -211,14 +236,23 @@ class _ChatPageState extends State<ChatPage> {
                           }
                           return TextField(
                             controller: _sendMessageController,
-                            maxLines: null,
+                            minLines: 1,
+                            maxLines: 5,
                             keyboardType: TextInputType.multiline,
                             maxLength: 1000,
                             decoration: InputDecoration(
                               counterText: "",
-                              hintText: selectedTagsNumber > 0 ? _stringTags : "Digite uma mensagem",
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              hintText:
+                                  selectedTagsNumber > 0
+                                      ? _stringTags
+                                      : "Digite uma mensagem",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 10,
+                              ),
                             ),
                           );
                         },
@@ -235,7 +269,11 @@ class _ChatPageState extends State<ChatPage> {
                       style: ButtonStyle(
                         backgroundColor:
                             _hasMessage && selectedTagsNotifier.value > 0
-                                ? WidgetStatePropertyAll(CustomThemes.mainColor(colorTheme))
+                                ? WidgetStatePropertyAll(
+                                  CustomThemes.mainColor(
+                                    colorThemeNotifier.value,
+                                  ),
+                                )
                                 : null,
                       ),
                     ),

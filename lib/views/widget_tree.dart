@@ -61,7 +61,9 @@ class _WidgetTreeState extends State<WidgetTree> {
   }
 
   void tcpSendTask(dynamic taskToSend) {
-    taskToSend is Task ? _networking.addTaskToTaskBox(taskToSend) : _networking.addPollToTaskBox(taskToSend);
+    taskToSend is Task
+        ? _networking.addTaskToTaskBox(taskToSend)
+        : _networking.addPollToTaskBox(taskToSend);
   }
 
   void tcpSendPdf(Pdf pdfToSend) {
@@ -98,7 +100,9 @@ class _WidgetTreeState extends State<WidgetTree> {
           return Navigator(pages: [page]);
         },
       ),
-      bottomNavigationBar: NavigationBarWidget(onTabChange: (index) => selectedPageNotifier.value = index),
+      bottomNavigationBar: NavigationBarWidget(
+        onTabChange: (index) => selectedPageNotifier.value = index,
+      ),
     );
   }
 }

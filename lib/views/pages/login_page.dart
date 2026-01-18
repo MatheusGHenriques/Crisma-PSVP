@@ -1,3 +1,4 @@
+import '/services/cryptography/argon2_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '/data/custom_themes.dart';
@@ -7,6 +8,7 @@ import '/views/widget_tree.dart';
 import '/views/widgets/tag_selection_widget.dart';
 import '/views/widgets/theme_color_button.dart';
 import '/views/widgets/theme_mode_button.dart';
+import '/views/widgets/loading_filled_button.dart';
 import '/data/user_info.dart';
 
 class LoginPage extends StatefulWidget {
@@ -20,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _nameController = TextEditingController();
   bool _hasName = false;
 
-  Map<String, bool> loginTags = {
+  final Map<String, bool> loginTags = {
     "Coordenação": false,
     "Música": false,
     "Suporte": false,
@@ -33,35 +35,49 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    resetUser();
+    super.initState();
+    _resetUser();
     _nameController.addListener(() {
       setState(() {
-        _hasName = _nameController.text.isNotEmpty;
+        _hasName = _nameController.text.trim().isNotEmpty;
       });
     });
-    super.initState();
   }
 
-  void resetUser() async {
+  Future<void> _resetUser() async {
     await homeBox.delete("userName");
+    await homeBox.delete("userId");
   }
 
   @override
   void dispose() {
+    _nameController.dispose();
     super.dispose();
   }
 
-  void pressedContinueButton() async {
+  Future<void> _handleLogin() async {
     userName = _nameController.text.trim();
     selectedPageNotifier.value = 0;
-    for (String tag in loginTags.keys) {
+
+    for (final tag in loginTags.keys) {
       userTags[tag] = loginTags[tag]!;
     }
-    userTags["Geral"] = true;
+    userTags['Geral'] = true;
+
+    await Argon2Manager.checkGroupPassword(generalPassword, 'Geral');
+    await Argon2Manager.createUserKey();
+
     await homeBox.put("userName", userName);
-    for (String tag in userTags.keys) {
+    await homeBox.put("userId", userId);
+
+    for (final tag in userTags.keys) {
       await homeBox.put(tag, userTags[tag]!);
     }
+
+    if (!mounted) return;
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => WidgetTree()));
   }
 
   @override
@@ -70,54 +86,56 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         leading: ThemeColorButton(context: context),
         forceMaterialTransparency: true,
-        actions: [ThemeModeButton()],
+        actions: const [ThemeModeButton()],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 40.0),
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           spacing: 20,
           children: [
-            Lottie.asset(CustomThemes.lottie(colorTheme), width: MediaQuery.of(context).size.width / 2),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Lottie.asset(
+                  CustomThemes.lottie(colorThemeNotifier.value),
+                  width: responsiveWidth(constraints) / 1.3,
+                );
+              },
+            ),
             ValueListenableBuilder(
               valueListenable: isDarkModeNotifier,
-              builder: (context, darkMode, child) {
-                return Image.asset(
-                  CustomThemes.image(colorTheme, darkMode),
-                  width: MediaQuery.of(context).size.width / 2,
+              builder: (context, darkMode, _) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Image.asset(
+                      CustomThemes.image(colorThemeNotifier.value, darkMode),
+                      width: responsiveWidth(constraints) / 1.3,
+                    );
+                  },
                 );
               },
             ),
             TextField(
+              controller: _nameController,
               textAlign: TextAlign.center,
               maxLength: 30,
-              decoration: InputDecoration(hintText: "Digite seu nome aqui", counterText: ""),
-              controller: _nameController,
+              decoration: const InputDecoration(
+                hintText: "Digite seu nome aqui",
+                counterText: "",
+              ),
             ),
-            const Text("Selecione os grupos dos quais você faz parte:", textAlign: TextAlign.center),
+            const Text(
+              "Selecione os grupos dos quais você faz parte:",
+              textAlign: TextAlign.center,
+            ),
             TagSelectionWidget(tags: loginTags, login: true),
-            ValueListenableBuilder(
-              valueListenable: selectedTagsNotifier,
-              builder: (context, selectedTagsNumber, child) {
-                return FilledButton(
-                  onPressed:
-                      _hasName && (loginTags['Homens']! || loginTags['Mulheres']!)
-                          ? () {
-                            pressedContinueButton();
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return WidgetTree();
-                                },
-                              ),
-                            );
-                          }
-                          : null,
-                  child: const Text("Continuar"),
-                );
-              },
+            LoadingFilledButton(
+              label: "Continuar",
+              onPressed:
+                  _hasName && (loginTags['Homens']! || loginTags['Mulheres']!)
+                      ? _handleLogin
+                      : () async {},
             ),
             const SizedBox(height: 20),
           ],

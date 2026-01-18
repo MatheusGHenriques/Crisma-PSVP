@@ -17,7 +17,7 @@ class MessageAdapter extends TypeAdapter<Message> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Message(
-      tags: (fields[0] as Map).cast<String, bool>(),
+      encryptedAesKey: (fields[0] as Map).cast<String, String>(),
       sender: fields[1] as String,
       text: fields[2] as String,
       readBy: (fields[3] as List?)?.cast<String>(),
@@ -30,7 +30,7 @@ class MessageAdapter extends TypeAdapter<Message> {
     writer
       ..writeByte(5)
       ..writeByte(0)
-      ..write(obj.tags)
+      ..write(obj.encryptedAesKey)
       ..writeByte(1)
       ..write(obj.sender)
       ..writeByte(2)
@@ -67,7 +67,7 @@ class TaskAdapter extends TypeAdapter<Task> {
       numberOfPersons: (fields[1] as num).toInt(),
       persons: (fields[2] as Map?)?.cast<String, bool>(),
       description: fields[3] as String,
-      tags: (fields[4] as Map).cast<String, bool>(),
+      encryptedAesKey: (fields[4] as Map).cast<String, String>(),
       time: fields[5] as DateTime?,
     );
   }
@@ -85,7 +85,7 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(3)
       ..write(obj.description)
       ..writeByte(4)
-      ..write(obj.tags)
+      ..write(obj.encryptedAesKey)
       ..writeByte(5)
       ..write(obj.time);
   }
@@ -119,7 +119,7 @@ class PollAdapter extends TypeAdapter<Poll> {
             MapEntry(k as String, (v as List).cast<String>()),
       ),
       description: fields[3] as String,
-      tags: (fields[4] as Map).cast<String, bool>(),
+      encryptedAesKey: (fields[4] as Map).cast<String, String>(),
       time: fields[5] as DateTime?,
     );
   }
@@ -137,7 +137,7 @@ class PollAdapter extends TypeAdapter<Poll> {
       ..writeByte(3)
       ..write(obj.description)
       ..writeByte(4)
-      ..write(obj.tags)
+      ..write(obj.encryptedAesKey)
       ..writeByte(5)
       ..write(obj.time);
   }

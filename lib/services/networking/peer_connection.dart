@@ -116,7 +116,7 @@ extension PeerConnection on PeerToPeerNetworking {
     }
   }
 
-  void handleHandshake(Socket socket, String data) async{
+  void handleHandshake(Socket socket, String data) async {
     if (handshakes.containsKey(socket)) {
       final Map<String, dynamic> jsonData = json.decode(data);
       final String type = jsonData['type'];
@@ -128,9 +128,9 @@ extension PeerConnection on PeerToPeerNetworking {
     }
   }
 
-  void handleAesDecryption(Socket socket, String data) async{
+  void handleAesDecryption(Socket socket, String data) async {
     final aesKey = aesKeys[socket]!;
-    final Map<String, dynamic> clearMsg = await AesManager.decrypt(aesKey, data);
+    final Map<String, dynamic> clearMsg = json.decode(await AesManager.decrypt(aesKey, data)) as Map<String, dynamic>;
 
     final handlers = {
       'heartbeat': () => lastHeartbeat[socket] = DateTime.now(),
